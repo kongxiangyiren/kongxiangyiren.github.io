@@ -7,20 +7,20 @@ body,
 }
 
 * {
-  cursor: url('@/assets/Crystal/working.png'), default;
+  cursor: url('/Crystal/working.png'), default;
 }
 
 button,
 a {
-  cursor: url('@/assets/Crystal/link.png'), pointer;
+  cursor: url('/Crystal/link.png'), pointer;
 }
 
 input,
 p {
-  cursor: url('@/assets/Crystal/text.png'), text;
+  cursor: url('/Crystal/text.png'), text;
 }
 
 input[disabled],
 input[readonly] {
-  cursor: url('@/assets/Crystal/unavailable.png'), not-allowed !important;
+  cursor: url('/Crystal/unavailable.png'), not-allowed !important;
 }

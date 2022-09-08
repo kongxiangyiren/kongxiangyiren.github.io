@@ -28,6 +28,25 @@
         justify-content: center;
         flex-direction: column;
       }
+
+      * {
+        cursor: url('/Crystal/working.png'), default;
+      }
+
+      button,
+      a {
+        cursor: url('/Crystal/link.png'), pointer;
+      }
+
+      input,
+      p {
+        cursor: url('/Crystal/text.png'), text;
+      }
+
+      input[disabled],
+      input[readonly] {
+        cursor: url('/Crystal/unavailable.png'), not-allowed !important;
+      }
     </style>
   </body>
 </html>
