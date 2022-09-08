@@ -9,15 +9,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/home',
     name: 'home',
     component: Home
-  },
-  {
-    path: '/404',
-    name: 'notPages',
-    component: () => import('@/views/404.vue')
-  },
-  {
-    path: '/:pathMatch(.*)',
-    redirect: '/404'
   }
 ];
 
