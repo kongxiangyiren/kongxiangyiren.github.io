@@ -3,6 +3,10 @@ import Home from '../views/HomeView.vue';
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
+    redirect: '/home'
+  },
+  {
+    path: '/home',
     name: 'home',
     component: Home
   }
