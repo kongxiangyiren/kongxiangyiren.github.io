@@ -1,7 +1,16 @@
 <template>
-  <router-view></router-view>
+  <div>
+    <background></background>
+    <router-view></router-view>
+  </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+  import Background from './components/background.vue';
+</script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  * {
+    color: #fff;
+  }
+</style>

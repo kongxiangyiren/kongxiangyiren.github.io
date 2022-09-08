@@ -18,5 +18,13 @@ export default defineConfig({
       // Required - Routes to render.
       routes: ['/', '/home']
     })
-  ]
+  ],
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        error: resolve(__dirname, '404.html')
+      }
+    }
+  }
 });
