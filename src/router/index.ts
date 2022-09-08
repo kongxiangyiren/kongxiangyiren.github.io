@@ -9,12 +9,16 @@ const routes: Array<RouteRecordRaw> = [
     path: '/home',
     name: 'home',
     component: Home
+  },
+  {
+    path: '/404',
+    name: 'notPages',
+    component: () => import('@/views/404.vue')
+  },
+  {
+    path: '/:pathMatch(.*)',
+    redirect: '/404'
   }
-  // {
-  //   path: '/about',
-  //   name: 'about',
-  //   component: () => import( '../views/AboutView.vue')
-  // }
 ];
 
 const router = createRouter({
