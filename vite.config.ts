@@ -15,17 +15,8 @@ export default defineConfig({
     vitePrerender({
       // Required - The path to the vite-outputted app to prerender.
       staticDir: join(__dirname, 'dist'),
-      indexPath: join(__dirname, 'dist', 'index.html'),
       // Required - Routes to render.
       routes: ['/', '/home']
     })
-  ],
-  build: {
-    rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html'),
-        error: resolve(__dirname, '404.html')
-      }
-    }
-  }
+  ]
 });
