@@ -17,12 +17,6 @@ export default defineConfig({
       outputDir: join(__dirname, 'dist'),
       // Required - Routes to render.
       routes: ['/', '/home']
-      // {
-      //   route: String, // 输出文件将在哪里结束(相对于outputDir)
-      //   originalRoute: String, // 在重定向之前传递到渲染器的路由。
-      //   html: String, // 此路由的渲染HTML。
-      //   outputPath: String // 呈现的HTML将被写入的路径。
-      // }
     })
   ]
 });
