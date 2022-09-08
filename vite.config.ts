@@ -4,7 +4,7 @@ import vitePrerender from 'vite-plugin-prerender';
 import { join, resolve } from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: './',
+  base: '/',
   resolve: {
     alias: {
       '@': resolve('src')
@@ -15,7 +15,7 @@ export default defineConfig({
     vitePrerender({
       // Required - The path to the vite-outputted app to prerender.
       staticDir: join(__dirname, 'dist'),
-      outputDir: join(__dirname, 'dist'),
+      indexPath: join(__dirname, 'dist', 'index.html'),
       // Required - Routes to render.
       routes: ['/', '/home']
     })
