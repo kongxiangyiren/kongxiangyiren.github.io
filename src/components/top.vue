@@ -5,7 +5,7 @@
     </div>
     <div class="menus">
       <router-link to="/">首页</router-link>
-      <router-link to="/404.html">404</router-link>
+      <router-link to="/test">测试页</router-link>
     </div>
   </div>
 </template>

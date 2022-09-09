@@ -28,7 +28,7 @@ export default defineConfig({
       // Required - The path to the vite-outputted app to prerender.
       staticDir: join(__dirname, 'dist'),
       // Required - Routes to render.
-      routes: ['/', '/home']
+      routes: ['/', '/home', '/test']
     })
   ]
 });
