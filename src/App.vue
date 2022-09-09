@@ -32,7 +32,7 @@
       --el-header-padding: 0 !important;
     }
     .el-main {
-      min-height: calc(100vh - 60px - 60px);
+      height: calc(100vh - 60px - 60px);
       color: #fff;
     }
     .el-footer {
