@@ -7,6 +7,23 @@ body,
   color: #4c4948;
 }
 
+@font-face {
+  font-family: 'dsdigi';
+  src: url('@/assets/fonts/DS-DIGI.ttf');
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background-color: rgba(0, 0, 0, 0);
+  border-radius: 4px;
+}
+
 a {
   text-decoration: none;
   color: #4c4948;
@@ -14,6 +31,9 @@ a {
 
 * {
   cursor: url('@/assets/Crystal/working.png'), default;
+  /* 禁止选中文本 */
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 button,
