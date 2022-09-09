@@ -1,7 +1,7 @@
 <template>
   <div class="footer">
     <div>
-      版权所有 &copy;2022{{ new Date().getFullYear() === 2022 ? '' : `${new Date().getFullYear()}` }}
+      版权所有 &copy;2022{{ new Date().getFullYear() === 2022 ? '' : ` - ${new Date().getFullYear()}` }}
       <redHeart class="redHeart"></redHeart>
       空巷
     </div>
