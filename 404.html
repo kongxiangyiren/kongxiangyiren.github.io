@@ -2,51 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/logo.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>404|空巷</title>
   </head>
-  <body oncontextmenu="return false">
-    <div id="app">
-      <div class="notPages">
-        <h1>404</h1>
-        <div>对不起，您找的页面不存在</div>
-      </div>
-    </div>
-    <style>
-      html,
-      body,
-      #app {
-        margin: 0;
-        width: 100%;
-        height: 100%;
-      }
-      .notPages {
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-      }
-
-      * {
-        cursor: url('/Crystal/working.png'), default;
-      }
-
-      button,
-      a {
-        cursor: url('/Crystal/link.png'), pointer;
-      }
-
-      input,
-      p {
-        cursor: url('/Crystal/text.png'), text;
-      }
-
-      input[disabled],
-      input[readonly] {
-        cursor: url('/Crystal/unavailable.png'), not-allowed !important;
-      }
-    </style>
-  </body>
+  <body oncontextmenu="return false"></body>
+  <script>
+    // 跳转到 /404
+    location = '/404';
+  </script>
 </html>
