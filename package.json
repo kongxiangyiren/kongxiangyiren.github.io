@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "element-plus": "^2.2.16",
+    "live2d-widget": "^3.1.4",
+    "live2d-widget-model-koharu": "^1.0.5",
     "vue": "^3.2.39",
     "vue-router": "^4.1.5"
   },
@@ -22,6 +24,7 @@
     "unplugin-auto-import": "^0.11.2",
     "unplugin-vue-components": "^0.22.4",
     "vite": "^3.1.0",
+    "vite-copy-plugin": "^0.4.0",
     "vite-plugin-prerender": "^1.0.8",
     "vite-svg-loader": "^3.6.0",
     "vue-tsc": "^0.40.13"
