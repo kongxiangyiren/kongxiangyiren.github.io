@@ -32,7 +32,7 @@
     L2Dwidget.init({
       model: {
         scale: 1, //缩放
-        jsonPath: import.meta.env.DEV ? lwmh : new URL('./live2d-widget-model-koharu/assets/koharu.model.json', import.meta.url).href
+        jsonPath: import.meta.env.DEV ? lwmh : import.meta.env.BASE_URL + 'live2d-widget-model-koharu/assets/koharu.model.json'
         // jsonPath: 'https://unpkg.com/live2d-widget-model-chitose@1.0.5/assets/chitose.model.json'
         // jsonPath: 'https://unpkg.com/live2d-widget-model-epsilon2_1@1.0.5/assets/Epsilon2.1.model.json'
         // jsonPath: 'https://unpkg.com/live2d-widget-model-gf@1.0.5/assets/Gantzert_Felixander.model.json'
