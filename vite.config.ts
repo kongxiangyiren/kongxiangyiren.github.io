@@ -32,5 +32,19 @@ export default defineConfig({
       routes: ['/', '/home', '/test', '/404']
     }),
     CopyPlugin([{ from: './node_modules/live2d-widget-model-koharu', to: 'dist/live2d-widget-model-koharu' }])
-  ]
+  ],
+  build: {
+    outDir: './dist',
+    assetsDir: 'assets',
+    // 移除log
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        //生产环境时移除console.log()
+        drop_console: true,
+        //生产环境时移除debugger
+        drop_debugger: false
+      }
+    }
+  }
 });
