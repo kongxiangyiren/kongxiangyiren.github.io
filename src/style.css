@@ -36,6 +36,11 @@ a {
   user-select: none;
 }
 
+#live2d {
+  cursor: url('@/assets/Crystal/working.png'), default !important;
+}
+
+#waifu-tool .fa-lg,
 button,
 a {
   cursor: url('@/assets/Crystal/link.png'), pointer;
