@@ -16,61 +16,29 @@
         </el-container>
       </div>
     </el-config-provider>
+    <live2d></live2d>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { onMounted } from 'vue';
   import Background from './components/background.vue';
   import zhCn from 'element-plus/lib/locale/lang/zh-cn';
   import Top from './components/top.vue';
   import Footer1 from './components/footer.vue';
-  import lwmh from 'live2d-widget-model-koharu/assets/koharu.model.json?url';
-  import { L2Dwidget } from 'live2d-widget';
-  onMounted(() => {
-    // https://l2dwidget.js.org/docs/class/src/index.js~L2Dwidget.html#instance-method-init
-    L2Dwidget.init({
-      model: {
-        scale: 1, //缩放
-        jsonPath: import.meta.env.DEV ? lwmh : import.meta.env.BASE_URL + 'live2d-widget-model-koharu/assets/koharu.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-chitose@1.0.5/assets/chitose.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-epsilon2_1@1.0.5/assets/Epsilon2.1.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-gf@1.0.5/assets/Gantzert_Felixander.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-haru01@1.0.2/assets/haru01.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-haru02@1.0.2/assets/haru02.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-haruto@1.0.5/assets/haruto.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-hibiki@1.0.5/assets/hibiki.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-hijiki@1.0.5/assets/hijiki.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-izumi@1.0.5/assets/izumi.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-koharu@1.0.5/assets/koharu.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-miku@1.0.5/assets/miku.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-nico@1.0.5/assets/nico.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-ni-j@1.0.5/assets/ni-j.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-nipsilon@1.0.5/assets/nipsilon.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-nito@1.0.5/assets/nito.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-shizuku@1.0.5/assets/shizuku.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-tororo@1.0.5/assets/tororo.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-tsumiki@1.0.5/assets/tsumiki.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-unitychan@1.0.5/assets/unitychan.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-wanko@1.0.5/assets/wanko.model.json'
-        // jsonPath: 'https://unpkg.com/live2d-widget-model-z16@1.0.5/assets/z16.model.json'
-      },
-      display: {
-        position: 'right', //位置
-        width: 200, //宽度
-        height: 400, //高度
-        hOffset: 0,
-        vOffset: -80
-      },
-      mobile: {
-        show: true,
-        scale: 0.5
-      },
-      dialog: {
-        enable: true,
-        hitokoto: true
-      }
-    });
+  import Live2d from './components/live2d.vue';
+
+  var OriginTitile = document.title;
+  var titleTime: NodeJS.Timeout;
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      document.title = '糟糕,网页崩溃了!!!';
+      clearTimeout(titleTime);
+    } else {
+      document.title = '哎呀,又好了!!!';
+      titleTime = setTimeout(function () {
+        document.title = OriginTitile;
+      }, 2000); // 2秒后恢复原标题
+    }
   });
 </script>
 
