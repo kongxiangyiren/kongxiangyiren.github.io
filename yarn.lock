@@ -2956,6 +2956,11 @@ vue-tsc@^0.40.13:
     "@volar/vue-language-core" "0.40.13"
     "@volar/vue-typescript" "0.40.13"
 
+vue-wechat-title@^2.0.7:
+  version "2.0.7"
+  resolved "https://registry.npmmirror.com/vue-wechat-title/-/vue-wechat-title-2.0.7.tgz#6ad4ca49fb2e7bcd0f1eed0a5fdcbe9461b2946b"
+  integrity sha512-qNkb56AWFHjOoGfW4lkstS4GC2W4YqVJYfnIUM73b/CBpMSOvcWSqtmb8ANa9owTKJr2dmBRmQV5K5YwrzbC5A==
+
 vue@^3.2.39:
   version "3.2.39"
   resolved "https://registry.npmmirror.com/vue/-/vue-3.2.39.tgz#de071c56c4c32c41cbd54e55f11404295c0dd62d"

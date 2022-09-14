@@ -8,17 +8,26 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/home',
     name: 'home',
-    component: Home
+    component: Home,
+    meta: {
+      title: '首页|空巷'
+    }
   },
   {
     path: '/test',
     name: 'test',
-    component: () => import('@/views/TestView.vue')
+    component: () => import('@/views/TestView.vue'),
+    meta: {
+      title: '测试|空巷'
+    }
   },
   {
     path: '/404',
     name: '404',
-    component: () => import('@/views/404.vue')
+    component: () => import('@/views/404.vue'),
+    meta: {
+      title: '404|空巷'
+    }
   },
   {
     path: '/:pathMatch(.*)',
@@ -29,6 +38,15 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes
+});
+
+router.beforeEach((to, from, next) => {
+  if (to.meta.title) {
+    document.title = to.meta.title as string;
+  } else {
+    document.title = '空巷';
+  }
+  next();
 });
 
 export default router;

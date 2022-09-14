@@ -6,3 +6,4 @@ declare module '*.vue' {
   export default component;
 }
 declare module 'live2d-widget';
+declare module 'vue-wechat-title';
