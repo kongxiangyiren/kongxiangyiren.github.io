@@ -53,16 +53,17 @@
   ];
 
   async function getDown(name: string, file: Promise<typeof import('*?url')>) {
-    //获取文件路径
+    // //获取文件路径
     let url = await file;
-    //非同源需转换成blob格式
-    let response = await fetch(url.default);
-    // // 内容转变成blob地址
-    let blob = await response.blob();
-    // // 创建隐藏的可下载链接
-    let objectUrl = window.URL.createObjectURL(blob);
+    // //非同源需转换成blob格式
+    // let response = await fetch(url.default);
+    // // // 内容转变成blob地址
+    // let blob = await response.blob();
+    // // // 创建隐藏的可下载链接
+    // let objectUrl = window.URL.createObjectURL(blob);
     let a = document.createElement('a');
-    a.href = objectUrl;
+    // a.href = objectUrl;
+    a.href = url.default;
     a.download = name;
     a.click();
     a.remove();
