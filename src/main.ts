@@ -4,6 +4,8 @@ import App from './App.vue';
 import router from './router';
 import vueWechatTitle from 'vue-wechat-title';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import '@/components/clicker.js';
+
 const app = createApp(App);
 app.use(router).use(vueWechatTitle);
 
