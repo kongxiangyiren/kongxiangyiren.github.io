@@ -5,7 +5,7 @@
     </div>
     <div class="menus">
       <router-link to="/">首页</router-link>
-      <router-link to="/test">测试页</router-link>
+      <router-link to="/download">资源下载</router-link>
     </div>
   </div>
 </template>

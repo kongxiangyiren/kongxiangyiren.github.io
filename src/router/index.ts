@@ -14,11 +14,11 @@ const routes: Array<RouteRecordRaw> = [
     }
   },
   {
-    path: '/test',
-    name: 'test',
-    component: () => import('@/views/TestView.vue'),
+    path: '/download',
+    name: 'download',
+    component: () => import('@/views/DownView.vue'),
     meta: {
-      title: '测试|空巷'
+      title: '资源下载|空巷'
     }
   },
   {

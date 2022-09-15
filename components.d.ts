@@ -9,6 +9,7 @@ declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     Background: typeof import('./src/components/background.vue')['default']
     ElAffix: typeof import('element-plus/es')['ElAffix']
+    ElCard: typeof import('element-plus/es')['ElCard']
     ElCol: typeof import('element-plus/es')['ElCol']
     ElConfigProvider: typeof import('element-plus/es')['ElConfigProvider']
     ElContainer: typeof import('element-plus/es')['ElContainer']
@@ -18,6 +19,7 @@ declare module '@vue/runtime-core' {
     ElRow: typeof import('element-plus/es')['ElRow']
     Footer: typeof import('./src/components/footer.vue')['default']
     Live2d: typeof import('./src/components/live2d.vue')['default']
+    Router: typeof import('./src/components/router.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Top: typeof import('./src/components/top.vue')['default']

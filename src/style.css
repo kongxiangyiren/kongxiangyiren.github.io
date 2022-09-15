@@ -16,7 +16,7 @@ body,
   width: 6px;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(gray, 0.6);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-track {
@@ -29,18 +29,16 @@ a {
   color: #4c4948;
 }
 
-* {
+html,
+#live2d {
   cursor: url('@/assets/Crystal/working.png'), default;
   /* 禁止选中文本 */
   -webkit-user-select: none;
   user-select: none;
 }
 
-#live2d {
-  cursor: url('@/assets/Crystal/working.png'), default !important;
-}
-
 #waifu-tool .fa-lg,
+.click,
 button,
 a {
   cursor: url('@/assets/Crystal/link.png'), pointer;

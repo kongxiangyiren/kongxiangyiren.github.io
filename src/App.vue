@@ -9,7 +9,9 @@
               <top></top>
             </el-header>
           </el-affix>
-          <el-main><router-view></router-view></el-main>
+          <el-main>
+            <router></router>
+          </el-main>
           <el-footer>
             <footer1></footer1>
           </el-footer>
@@ -25,6 +27,7 @@
   import zhCn from 'element-plus/lib/locale/lang/zh-cn';
   import Top from './components/top.vue';
   import Footer1 from './components/footer.vue';
+  import Router from './components/router.vue';
   // import Live2d from './components/live2d.vue';
 
   var OriginTitile = document.title;
