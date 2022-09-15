@@ -29,12 +29,15 @@ a {
   color: #4c4948;
 }
 
-html,
-#live2d {
+html {
   cursor: url('@/assets/Crystal/working.png'), default;
   /* 禁止选中文本 */
   -webkit-user-select: none;
   user-select: none;
+}
+
+#live2d {
+  cursor: url('@/assets/Crystal/working.png'), default !important;
 }
 
 #waifu-tool .fa-lg,
