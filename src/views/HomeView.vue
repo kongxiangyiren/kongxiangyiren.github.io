@@ -7,9 +7,17 @@
           {{ time }}
         </div>
         <div class="today">
-          <span class="mouth">{{ new Date().getMonth() + 1 < 10 ? '0' + (new Date().getMonth() + 1) : new Date().getMonth() + 1 }}</span>
+          <span class="mouth">
+            {{
+              new Date().getMonth() + 1 < 10
+                ? '0' + (new Date().getMonth() + 1)
+                : new Date().getMonth() + 1
+            }}
+          </span>
           月
-          <span class="day">{{ new Date().getDate() < 10 ? '0' + new Date().getDate() : new Date().getDate() }}</span>
+          <span class="day">
+            {{ new Date().getDate() < 10 ? '0' + new Date().getDate() : new Date().getDate() }}
+          </span>
           日
           {{ wstr }}
         </div>
@@ -85,8 +93,8 @@
     text-align: center;
     .currentTime {
       padding-top: 30px;
-      font-size: 50px;
-      font-family: dsdigi;
+      font-size: 32px;
+      font-family: 'sa-digital-number';
     }
   }
 </style>

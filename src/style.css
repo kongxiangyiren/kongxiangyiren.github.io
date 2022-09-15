@@ -8,8 +8,8 @@ body,
 }
 
 @font-face {
-  font-family: 'dsdigi';
-  src: url('@/assets/fonts/DS-DIGI.ttf');
+  font-family: 'sa-digital-number';
+  src: url('@/assets/fonts/sa-digital-number.ttf');
 }
 
 ::-webkit-scrollbar {
