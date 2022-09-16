@@ -168,6 +168,12 @@
   });
 </script>
 
+<style>
+  .el-select-dropdown__item {
+    cursor: url('@/assets/Crystal/link.png'), pointer !important;
+  }
+</style>
+
 <style scoped lang="scss">
   .el-row {
     height: 100%;
@@ -187,6 +193,20 @@
         width: 80%;
         margin: auto;
         padding: 50px 0;
+        .el-select {
+          :deep(.el-input) {
+            cursor: url('@/assets/Crystal/link.png'), pointer;
+            .el-input__inner {
+              cursor: url('@/assets/Crystal/link.png'), pointer;
+            }
+            .el-input__wrapper {
+              cursor: url('@/assets/Crystal/link.png'), pointer;
+              .el-select__caret {
+                cursor: url('@/assets/Crystal/link.png'), pointer;
+              }
+            }
+          }
+        }
       }
     }
     .right {
@@ -194,6 +214,7 @@
       min-height: 400px;
       background-color: rgba($color: #fff, $alpha: 0.7);
       border-radius: 4px;
+      margin-bottom: 20px;
 
       .time {
         text-align: center;
@@ -204,7 +225,7 @@
         }
       }
       .history {
-        width: 100%;
+        width: calc(100% - 40px);
         padding: 20px;
         .title {
           font-size: 20px;
@@ -212,7 +233,7 @@
           margin-bottom: 15px;
         }
         .list {
-          width: calc(100% - 40px);
+          width: 100%;
           line-height: 1.5em;
           padding-bottom: 20px;
 

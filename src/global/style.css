@@ -47,12 +47,15 @@ a {
   cursor: url('@/assets/Crystal/link.png'), pointer;
 }
 
+.el-button {
+  cursor: url('@/assets/Crystal/link.png'), pointer !important;
+}
+
 input,
 p {
   cursor: url('@/assets/Crystal/text.png'), text;
 }
 
-input[disabled],
-input[readonly] {
+input[disabled] {
   cursor: url('@/assets/Crystal/unavailable.png'), not-allowed !important;
 }
