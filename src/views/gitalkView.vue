@@ -15,7 +15,7 @@
     labels: ['kongxiangyiren'],
     perPage: 50,
     distractionFreeMode: false,
-    proxy: 'https://netnr-proxy.cloudno.de/https://github.com/login/oauth/access_token'
+    proxy: 'https://www.feiyuhao0729.com/login/oauth/access_token'
   });
   onMounted(() => {
     gitalk.render('gitalk-container');
