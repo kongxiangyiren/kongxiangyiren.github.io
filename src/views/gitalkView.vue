@@ -14,7 +14,8 @@
     admin: ['kongxiangyiren'], //github用户名
     labels: ['kongxiangyiren'],
     perPage: 50,
-    distractionFreeMode: false
+    distractionFreeMode: false,
+    proxy: 'https://netnr-proxy.cloudno.de/https://github.com/login/oauth/access_token'
   });
   onMounted(() => {
     gitalk.render('gitalk-container');
