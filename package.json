@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.2.0",
+    "axios": "^0.27.2",
     "element-plus": "^2.2.16",
     "jquery": "^3.6.1",
     "live2d-widget": "^3.1.4",

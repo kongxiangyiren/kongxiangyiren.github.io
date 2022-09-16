@@ -1,25 +1,63 @@
 <template>
-  <el-row>
-    <el-col :md="18">1</el-col>
-    <el-col :md="6">
-      <div class="time">
-        <div class="currentTime">
-          {{ time }}
+  <el-row :gutter="20">
+    <el-col :md="18">
+      <div class="left">
+        <div class="search">
+          <el-input
+            :size="size() ? 'large' : 'small'"
+            v-model="input"
+            placeholder="请输入搜索内容"
+            class="input-with-select"
+            @keydown.enter="search"
+          >
+            <template #prepend>
+              <el-select
+                :size="size() ? 'large' : 'small'"
+                v-model="select"
+                placeholder="搜索引擎"
+                :style="size() ? 'width:150px' : 'width:100px'"
+              >
+                <el-option
+                  :label="item.label"
+                  :value="item.value"
+                  v-for="item in cities"
+                  :key="item.value"
+                />
+              </el-select>
+            </template>
+            <template #append>
+              <el-button :size="size() ? 'large' : 'small'" :icon="Search" @click="search" />
+            </template>
+          </el-input>
         </div>
-        <div class="today">
-          <span class="mouth">
-            {{
-              new Date().getMonth() + 1 < 10
-                ? '0' + (new Date().getMonth() + 1)
-                : new Date().getMonth() + 1
-            }}
-          </span>
-          月
-          <span class="day">
-            {{ new Date().getDate() < 10 ? '0' + new Date().getDate() : new Date().getDate() }}
-          </span>
-          日
-          {{ wstr }}
+      </div>
+    </el-col>
+    <el-col :md="6">
+      <div class="right">
+        <div class="time">
+          <div class="currentTime">
+            {{ time }}
+          </div>
+          <div class="today">
+            <span class="mouth">
+              {{ month }}
+            </span>
+            月
+            <span class="day">
+              {{ today }}
+            </span>
+            日
+            {{ wstr }}
+          </div>
+        </div>
+        <div class="history">
+          <div class="title">历史上的今天</div>
+          <div class="list">
+            <div class="one" v-for="(item, index) in history" :key="index">
+              {{ item.year }}
+              <span v-html="item.title"></span>
+            </div>
+          </div>
         </div>
       </div>
     </el-col>
@@ -28,6 +66,46 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
+  import { getHistory } from '@/api/api';
+  import { Search } from '@element-plus/icons-vue';
+  const input = ref('');
+  const select = ref('开发者搜索');
+  const cities = [
+    {
+      value: '开发者搜索',
+      label: '开发者搜索'
+    },
+    {
+      value: '必应',
+      label: '必应'
+    },
+    {
+      value: '百度',
+      label: '百度'
+    }
+  ];
+  function search() {
+    console.log(input.value, select.value);
+    const w = window.open('about:blank') as Window;
+    if (select.value === '开发者搜索') {
+      w.location.href = 'https://kaifa.baidu.com/searchPage?module=SUG&wd=' + input.value;
+    } else if (select.value === '必应') {
+      w.location.href = 'https://cn.bing.com/search?q=' + input.value;
+    } else if (select.value === '百度') {
+      w.location.href = 'https://www.baidu.com/s?&tn=68018901_2_oem_dgie=utf-8&wd=' + input.value;
+    }
+  }
+
+  function size() {
+    return window.screen.availWidth >= 768 ? true : false;
+  }
+
+  // 右
+
+  let month =
+    new Date().getMonth() + 1 < 10 ? '0' + (new Date().getMonth() + 1) : new Date().getMonth() + 1;
+  let today = new Date().getDate() < 10 ? '0' + new Date().getDate() : new Date().getDate();
+
   const time = ref(getTime());
   // 获取时分秒
   function getTime() {
@@ -82,19 +160,79 @@
   setInterval(() => {
     time.value = getTime();
   }, 1000);
+
+  // 历史上的今天
+  let history = ref([{ year: String, title: String, link: String }]);
+  getHistory(month).then(res => {
+    history.value = res.data[month][month + '' + today].slice(0, 10);
+  });
 </script>
 
 <style scoped lang="scss">
-  .time {
-    width: 100%;
-    min-height: 400px;
-    background-color: rgba($color: #fff, $alpha: 0.7);
-    border-radius: 4px;
-    text-align: center;
-    .currentTime {
-      padding-top: 30px;
-      font-size: 32px;
-      font-family: 'sa-digital-number';
+  .el-row {
+    height: 100%;
+    @media screen and (max-width: 992px) {
+      .el-col {
+        margin: 20px 0;
+      }
+    }
+    .left {
+      width: 100%;
+      min-height: 400px;
+      height: 100%;
+      background-color: rgba($color: #fff, $alpha: 0.7);
+      border-radius: 4px;
+
+      .search {
+        width: 80%;
+        margin: auto;
+        padding: 50px 0;
+      }
+    }
+    .right {
+      width: 100%;
+      min-height: 400px;
+      background-color: rgba($color: #fff, $alpha: 0.7);
+      border-radius: 4px;
+
+      .time {
+        text-align: center;
+        .currentTime {
+          padding-top: 30px;
+          font-size: 32px;
+          font-family: 'sa-digital-number';
+        }
+      }
+      .history {
+        width: 100%;
+        padding: 20px;
+        .title {
+          font-size: 20px;
+          text-align: center;
+          margin-bottom: 15px;
+        }
+        .list {
+          width: calc(100% - 40px);
+          line-height: 1.5em;
+          padding-bottom: 20px;
+
+          color: rgba($color: #000, $alpha: 0.5);
+          .one {
+            width: 100%;
+            display: flex;
+
+            span {
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+              -o-text-overflow: ellipsis;
+              :deep(a) {
+                color: rgb(3, 172, 250);
+              }
+            }
+          }
+        }
+      }
     }
   }
 </style>
