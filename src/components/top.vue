@@ -6,6 +6,7 @@
     <div class="menus">
       <router-link to="/">首页</router-link>
       <router-link to="/download">资源下载</router-link>
+      <router-link to="/message">留言</router-link>
     </div>
   </div>
 </template>
