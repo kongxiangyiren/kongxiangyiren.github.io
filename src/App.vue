@@ -18,7 +18,7 @@
         </el-container>
       </div>
     </el-config-provider>
-    <!-- <live2d></live2d> -->
+    <live2d></live2d>
   </div>
 </template>
 
@@ -28,7 +28,7 @@
   import Top from './components/top.vue';
   import Footer1 from './components/footer.vue';
   import Router from './components/router.vue';
-  // import Live2d from './components/live2d.vue';
+  import Live2d from './components/live2d.vue';
 
   var OriginTitile = document.title;
   var titleTime: NodeJS.Timeout;

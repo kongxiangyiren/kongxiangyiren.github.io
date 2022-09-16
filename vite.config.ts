@@ -31,8 +31,10 @@ export default defineConfig({
       staticDir: join(__dirname, 'dist'),
       // Required - Routes to render.
       routes: ['/', '/home', '/download', '/message', '/404']
-    })
-    // CopyPlugin([{ from: './node_modules/live2d-widget-model-koharu', to: 'dist/live2d-widget-model-koharu' }])
+    }),
+    CopyPlugin([
+      { from: './node_modules/live2d-widget-model-koharu', to: 'dist/live2d-widget-model-koharu' }
+    ])
   ],
   server: {
     host: '0.0.0.0'

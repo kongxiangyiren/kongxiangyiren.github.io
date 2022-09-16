@@ -42,9 +42,10 @@ html {
 
 #waifu-tool .fa-lg,
 .click,
+.gt-container .gt-user-inner,
 button,
 a {
-  cursor: url('@/assets/Crystal/link.png'), pointer;
+  cursor: url('@/assets/Crystal/link.png'), pointer !important;
 }
 
 .el-button {

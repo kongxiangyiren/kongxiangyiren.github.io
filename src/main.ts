@@ -3,7 +3,6 @@ import '@/global/style.css';
 import App from './App.vue';
 import router from './router';
 import vueWechatTitle from 'vue-wechat-title';
-import '@fortawesome/fontawesome-free/css/all.min.css';
 import '@/global/clicker.js';
 
 const app = createApp(App);

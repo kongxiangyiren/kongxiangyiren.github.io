@@ -1,7 +1,6 @@
 <template></template>
 
 <script setup lang="ts">
-  import { onMounted } from 'vue';
   import lwmh from 'live2d-widget-model-koharu/assets/koharu.model.json?url';
   import { L2Dwidget } from 'live2d-widget';
   onMounted(() => {
@@ -9,7 +8,9 @@
     L2Dwidget.init({
       model: {
         scale: 1, //缩放
-        jsonPath: import.meta.env.DEV ? lwmh : import.meta.env.BASE_URL + 'live2d-widget-model-koharu/assets/koharu.model.json'
+        jsonPath: import.meta.env.DEV
+          ? lwmh
+          : import.meta.env.BASE_URL + 'live2d-widget-model-koharu/assets/koharu.model.json'
         // jsonPath: 'https://unpkg.com/live2d-widget-model-chitose@1.0.5/assets/chitose.model.json'
         // jsonPath: 'https://unpkg.com/live2d-widget-model-epsilon2_1@1.0.5/assets/Epsilon2.1.model.json'
         // jsonPath: 'https://unpkg.com/live2d-widget-model-gf@1.0.5/assets/Gantzert_Felixander.model.json'
@@ -44,40 +45,40 @@
         scale: 0.5
       },
       dialog: {
-        enable: true,
-        hitokoto: true
+        enable: false,
+        hitokoto: false
       }
     });
 
-    // 复制
-    document.addEventListener('copy', event => {
-      let text = document.querySelector('#live2d-widget > div > div') as HTMLElement;
-      text.style.opacity = '1';
-      text.innerHTML = '你复制了些什么啊,能不能让我看看？';
-      setTimeout(() => {
-        text.style.opacity = '0';
-      }, 4000);
-    });
-    //剪切
-    document.addEventListener('cut', event => {
-      let text = document.querySelector('#live2d-widget > div > div') as HTMLElement;
-      text.style.opacity = '1';
-      text.innerHTML = '你剪切了些什么啊,能不能让我看看？';
-      setTimeout(() => {
-        text.style.opacity = '0';
-      }, 4000);
-    });
-    // 回来
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) {
-        let text = document.querySelector('#live2d-widget > div > div') as HTMLElement;
-        text.style.opacity = '1';
-        text.innerHTML = '欢迎回来！';
-        setTimeout(() => {
-          text.style.opacity = '0';
-        }, 4000);
-      }
-    });
+    // // 复制
+    // document.addEventListener('copy', event => {
+    //   let text = document.querySelector('#live2d-widget > div > div') as HTMLElement;
+    //   text.style.opacity = '1';
+    //   text.innerHTML = '你复制了些什么啊,能不能让我看看？';
+    //   setTimeout(() => {
+    //     text.style.opacity = '0';
+    //   }, 4000);
+    // });
+    // //剪切
+    // document.addEventListener('cut', event => {
+    //   let text = document.querySelector('#live2d-widget > div > div') as HTMLElement;
+    //   text.style.opacity = '1';
+    //   text.innerHTML = '你剪切了些什么啊,能不能让我看看？';
+    //   setTimeout(() => {
+    //     text.style.opacity = '0';
+    //   }, 4000);
+    // });
+    // // 回来
+    // document.addEventListener('visibilitychange', () => {
+    //   if (!document.hidden) {
+    //     let text = document.querySelector('#live2d-widget > div > div') as HTMLElement;
+    //     text.style.opacity = '1';
+    //     text.innerHTML = '欢迎回来！';
+    //     setTimeout(() => {
+    //       text.style.opacity = '0';
+    //     }, 4000);
+    //   }
+    // });
   });
 </script>
 
