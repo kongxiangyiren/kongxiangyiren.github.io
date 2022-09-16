@@ -22,4 +22,12 @@
   });
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+  #gitalk-container {
+    width: 80%;
+    margin: 30px auto;
+    @media screen and (max-width: 768px) {
+      width: 100%;
+    }
+  }
+</style>
