@@ -19,6 +19,7 @@ export default defineConfig({
   plugins: [
     vue(),
     AutoImport({
+      imports: ['vue', 'vue-router'],
       resolvers: [ElementPlusResolver()]
     }),
     Components({
@@ -36,9 +37,16 @@ export default defineConfig({
   server: {
     host: '0.0.0.0'
   },
+
   build: {
     outDir: './dist',
-    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]'
+      }
+    },
     // 移除log
     minify: 'terser',
     terserOptions: {

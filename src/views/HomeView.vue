@@ -54,7 +54,7 @@
           <div class="title">历史上的今天</div>
           <div class="list">
             <div class="one" v-for="(item, index) in history" :key="index">
-              {{ item.year }}
+              {{ item.year }}&nbsp;
               <span v-html="item.title"></span>
             </div>
           </div>
@@ -65,7 +65,6 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
   import { getHistory } from '@/api/api';
   import { Search } from '@element-plus/icons-vue';
   const input = ref('');
@@ -85,14 +84,15 @@
     }
   ];
   function search() {
-    console.log(input.value, select.value);
-    const w = window.open('about:blank') as Window;
     if (select.value === '开发者搜索') {
-      w.location.href = 'https://kaifa.baidu.com/searchPage?module=SUG&wd=' + input.value;
+      window.open('https://kaifa.baidu.com/searchPage?module=SUG&wd=' + input.value, '_blank');
     } else if (select.value === '必应') {
-      w.location.href = 'https://cn.bing.com/search?q=' + input.value;
+      window.open('https://cn.bing.com/search?q=' + input.value, '_blank');
     } else if (select.value === '百度') {
-      w.location.href = 'https://www.baidu.com/s?&tn=68018901_2_oem_dgie=utf-8&wd=' + input.value;
+      window.open(
+        'https://www.baidu.com/s?&tn=68018901_2_oem_dgie=utf-8&wd=' + input.value,
+        '_blank'
+      );
     }
   }
 
