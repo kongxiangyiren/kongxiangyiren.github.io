@@ -34,11 +34,11 @@
         // jsonPath: 'https://unpkg.com/live2d-widget-model-z16@1.0.5/assets/z16.model.json'
       },
       display: {
-        position: 'right', //位置
-        width: 200, //宽度
-        height: 400, //高度
-        hOffset: 40,
-        vOffset: -80
+        position: 'left', //位置
+        width: 250, //宽度
+        height: 300, //高度
+        hOffset: 0,
+        vOffset: 0
       },
       mobile: {
         show: false,
