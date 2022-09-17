@@ -20,7 +20,7 @@
     perPage: 50,
     distractionFreeMode: false,
     // https://dash.cloudflare.com/
-    proxy: 'https://gitalk.feiyuhao5757.workers.dev/?https://github.com/login/oauth/access_token'
+    proxy: 'https://feiyuhao0729.com/login/oauth/access_token'
   });
   onMounted(() => {
     gitalk.render('gitalk-container');
