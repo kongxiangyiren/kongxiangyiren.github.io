@@ -19,8 +19,8 @@
     labels: ['评论'],
     perPage: 50,
     distractionFreeMode: false,
-    proxy:
-      'https://wild-forest-32d2.feiyuhao5757.workers.dev/?https://github.com/login/oauth/access_token'
+    // https://dash.cloudflare.com/
+    proxy: 'https://gitalk.feiyuhao5757.workers.dev/?https://github.com/login/oauth/access_token'
   });
   onMounted(() => {
     gitalk.render('gitalk-container');
