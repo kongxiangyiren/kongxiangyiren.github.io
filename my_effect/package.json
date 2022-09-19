@@ -1,12 +1,12 @@
 {
   "name": "my_effect",
   "version": "1.0.0",
-  "description": "",
+  "description": "我的vue3效果",
   "main": "src/clicker.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "空巷一人",
   "license": "MIT",
   "dependencies": {
     "jquery": "^3.6.1"
