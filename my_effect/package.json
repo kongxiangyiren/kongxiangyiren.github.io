@@ -2,7 +2,7 @@
   "name": "my_effect",
   "version": "1.0.0",
   "description": "我的vue3效果",
-  "main": "src/clicker.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
