@@ -24,7 +24,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/message',
     name: 'message',
-    component: () => import('@/views/gitalkView.vue'),
+    component: () => import('@/views/messageView.vue'),
     meta: {
       title: '留言|空巷'
     }

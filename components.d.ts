@@ -21,6 +21,8 @@ declare module '@vue/runtime-core' {
     ElRow: typeof import('element-plus/es')['ElRow']
     ElSelect: typeof import('element-plus/es')['ElSelect']
     Footer: typeof import('./src/components/footer.vue')['default']
+    Gitalk: typeof import('./src/components/gitalk.vue')['default']
+    Giteement: typeof import('./src/components/giteement.vue')['default']
     Live2d: typeof import('./src/components/live2d.vue')['default']
     Router: typeof import('./src/components/router.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

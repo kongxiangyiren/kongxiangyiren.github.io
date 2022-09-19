@@ -20,7 +20,7 @@
     perPage: 50,
     distractionFreeMode: false,
     // https://dash.cloudflare.com/
-    proxy: 'https://feiyuhao0729.com/login/oauth/access_token'
+    proxy: 'https://cors-anywhere.herokuapp.com/https://github.com/login/oauth/access_token'
   });
   onMounted(() => {
     gitalk.render('gitalk-container');
@@ -29,10 +29,6 @@
 
 <style scoped lang="scss">
   #gitalk-container {
-    width: 80%;
     margin: 30px auto;
-    @media screen and (max-width: 768px) {
-      width: 100%;
-    }
   }
 </style>
