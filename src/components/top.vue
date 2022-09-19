@@ -27,6 +27,13 @@
   import 'element-plus/theme-chalk/display.css';
   import Menu from '@/assets/menu.svg';
   const drawer = ref(false);
+  let $route = useRoute();
+
+  watch($route, () => {
+    if (drawer) {
+      drawer.value = false;
+    }
+  });
 </script>
 
 <style scoped lang="scss">
