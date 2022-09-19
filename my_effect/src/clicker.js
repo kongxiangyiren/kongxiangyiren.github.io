@@ -2,10 +2,11 @@
 import jQuery from 'jquery';
 /**
  * @description: 鼠标左键效果
- * @param {Boolean} love 爱心效果
- * @param {Boolean} value 社会主义核心价值观效果
+ * @param {Boolean} love 爱心效果,默认true
+ * @param {Boolean} value 社会主义核心价值观效果，默认true
+ * @return {void}
  */
-let clicker = (love, value) => {
+export let clicker = (love = true, value = true) => {
   if (love) {
     // 爱心效果
     !(function (e, t, a) {
@@ -140,5 +141,3 @@ let clicker = (love, value) => {
     });
   }
 };
-
-clicker(false, true);

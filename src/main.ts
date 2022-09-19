@@ -3,7 +3,9 @@ import '@/global/style.css';
 import App from './App.vue';
 import router from './router';
 import vueWechatTitle from 'vue-wechat-title';
-import '@/global/clicker.js';
+// // 点击效果
+import { clicker } from 'my_effect';
+clicker(false, true);
 
 const app = createApp(App);
 app.use(router).use(vueWechatTitle);

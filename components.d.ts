@@ -8,6 +8,7 @@ export {}
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
     Background: typeof import('./src/components/background.vue')['default']
+    Denglong: typeof import('./src/components/denglong.vue')['default']
     ElAffix: typeof import('element-plus/es')['ElAffix']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
@@ -24,7 +25,6 @@ declare module '@vue/runtime-core' {
     ElSelect: typeof import('element-plus/es')['ElSelect']
     Footer: typeof import('./src/components/footer.vue')['default']
     Gitalk: typeof import('./src/components/gitalk.vue')['default']
-    Giteement: typeof import('./src/components/giteement.vue')['default']
     Live2d: typeof import('./src/components/live2d.vue')['default']
     Router: typeof import('./src/components/router.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
