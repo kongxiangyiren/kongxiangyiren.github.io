@@ -53,6 +53,7 @@ a {
 }
 
 input,
+textarea,
 p {
   cursor: url('@/assets/Crystal/text.png'), text;
 }
