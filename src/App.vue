@@ -19,6 +19,7 @@
       </div>
     </el-config-provider>
     <live2d></live2d>
+    <right></right>
     <!-- <denglong1></denglong1> -->
   </div>
 </template>
@@ -30,6 +31,7 @@
   import Footer1 from './components/footer.vue';
   import Router from './components/router.vue';
   import Live2d from './components/live2d.vue';
+  import Right from './components/right.vue';
   // import Denglong1 from './components/denglong.vue';
 
   var OriginTitile = document.title;

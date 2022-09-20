@@ -26,6 +26,7 @@ declare module '@vue/runtime-core' {
     Footer: typeof import('./src/components/footer.vue')['default']
     Gitalk: typeof import('./src/components/gitalk.vue')['default']
     Live2d: typeof import('./src/components/live2d.vue')['default']
+    Right: typeof import('./src/components/right.vue')['default']
     Router: typeof import('./src/components/router.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
