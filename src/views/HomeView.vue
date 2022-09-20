@@ -72,27 +72,25 @@
   const cities = [
     {
       value: '开发者搜索',
-      label: '开发者搜索'
+      label: '开发者搜索',
+      href: 'https://kaifa.baidu.com/searchPage?module=SUG&wd='
     },
     {
       value: '必应',
-      label: '必应'
+      label: '必应',
+      href: 'https://cn.bing.com/search?q='
     },
     {
       value: '百度',
-      label: '百度'
+      label: '百度',
+      href: 'https://www.baidu.com/s?&tn=68018901_2_oem_dgie=utf-8&wd='
     }
   ];
   function search() {
-    if (select.value === '开发者搜索') {
-      window.open('https://kaifa.baidu.com/searchPage?module=SUG&wd=' + input.value, '_blank');
-    } else if (select.value === '必应') {
-      window.open('https://cn.bing.com/search?q=' + input.value, '_blank');
-    } else if (select.value === '百度') {
-      window.open(
-        'https://www.baidu.com/s?&tn=68018901_2_oem_dgie=utf-8&wd=' + input.value,
-        '_blank'
-      );
+    for (let item of cities) {
+      if (select.value.includes(item.value)) {
+        window.open(item.href + input.value, '_blank');
+      }
     }
   }
 
