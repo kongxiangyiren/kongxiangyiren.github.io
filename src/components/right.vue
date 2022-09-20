@@ -11,16 +11,16 @@
   const caidan1 = ref();
 
   document.oncontextmenu = function (e) {
-    console.log(e.clientX, e.clientY);
+    // console.log(e.clientX, e.clientY);
 
     caidan1.value.style.display = 'block';
-    if (document.documentElement.clientWidth > e.clientX + caidan1.value.offsetWidth) {
+    if (document.documentElement.clientWidth > e.clientX + caidan1.value.offsetWidth + 20) {
       caidan1.value.style.left = e.clientX + 'px';
     } else {
       caidan1.value.style.left = e.clientX - caidan1.value.offsetWidth - 10 + 'px';
     }
 
-    if (document.documentElement.clientHeight > e.clientY + caidan1.value.offsetHeight) {
+    if (document.documentElement.clientHeight > e.clientY + caidan1.value.offsetHeight + 20) {
       caidan1.value.style.top = e.clientY + 'px';
     } else {
       caidan1.value.style.top = e.clientY - caidan1.value.offsetHeight - 10 + 'px';
@@ -30,7 +30,7 @@
   };
   //鼠标左键单击
   document.onclick = function () {
-    (document.getElementById('caidan1') as HTMLElement).style.display = 'none';
+    caidan1.value.style.display = 'none';
   };
 </script>
 
@@ -43,6 +43,7 @@
     position: absolute;
     padding: 10px;
     border-radius: 10px;
+    z-index: 99999;
     li {
       list-style: none;
       line-height: 40px;
