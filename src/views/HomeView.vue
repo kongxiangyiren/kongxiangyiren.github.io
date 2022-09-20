@@ -90,6 +90,7 @@
     for (let item of cities) {
       if (select.value.includes(item.value)) {
         window.open(item.href + input.value, '_blank');
+        break;
       }
     }
   }
