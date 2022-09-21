@@ -95,7 +95,7 @@
       }
     }
     .content {
-      height: 100%;
+      height: calc(100% - 50px);
       overflow-y: auto;
       &::-webkit-scrollbar-thumb {
         background-color: rgba(gray, 0.6);

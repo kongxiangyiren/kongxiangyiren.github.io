@@ -181,13 +181,16 @@
         margin: 20px 0;
       }
     }
+
     .left {
       width: 100%;
       min-height: 400px;
       height: 100%;
       background-color: rgba($color: #fff, $alpha: 0.7);
       border-radius: 4px;
-
+      @media screen and (max-height: 600px) {
+        height: calc(100% - 20px);
+      }
       .search {
         width: 80%;
         margin: auto;
