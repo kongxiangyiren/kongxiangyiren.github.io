@@ -60,6 +60,19 @@
           </div>
         </div>
       </div>
+      <div class="right2">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量
+          <span id="busuanzi_value_site_pv">99</span>
+          次
+        </span>
+        <br />
+        <span id="busuanzi_container_site_uv">
+          本站总访客数
+          <span id="busuanzi_value_site_uv">99</span>
+          人
+        </span>
+      </div>
     </el-col>
   </el-row>
 </template>
@@ -256,6 +269,14 @@
           }
         }
       }
+    }
+    .right2 {
+      width: 100%;
+      background-color: rgba($color: #fff, $alpha: 0.7);
+      border-radius: 4px;
+      margin-bottom: 20px;
+      text-align: center;
+      padding: 20px 0;
     }
   }
 </style>
