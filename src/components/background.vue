@@ -1,7 +1,7 @@
 <template>
   <div class="background">
     <video autoplay loop muted="true" preload="true">
-      <source src="@/assets/04.mp4" />
+      <source src="@/assets/04.mp4" type="video/webm" />
     </video>
   </div>
 </template>

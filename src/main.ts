@@ -19,3 +19,8 @@ const app = createApp(App);
 app.use(router).use(vueWechatTitle);
 
 app.mount('#app');
+
+import VConsole from 'vconsole';
+if (import.meta.env.DEV) {
+  new VConsole({ maxLogNumber: 1000 });
+}

@@ -52,8 +52,7 @@
     }
     .menus {
       width: calc(100% / 2);
-      display: flex;
-      justify-content: right;
+      text-align: right;
       margin-right: 35px;
       a {
         margin: 0 10px;
