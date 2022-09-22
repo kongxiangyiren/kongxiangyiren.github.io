@@ -7,6 +7,8 @@ import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 import svgLoader from 'vite-svg-loader';
 import CopyPlugin from 'vite-copy-plugin';
+import progress from 'vite-plugin-progress';
+import colors from 'picocolors';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -34,13 +36,19 @@ export default defineConfig({
     }),
     CopyPlugin([
       { from: './node_modules/live2d-widget-model-koharu', to: 'dist/live2d-widget-model-koharu' }
-    ])
+    ]),
+    progress({
+      format: `${colors.green(colors.bold('正在打包'))} ${colors.cyan(
+        '[:bar]'
+      )} :percent | 用时: :elapseds | 预计完成: :etas`
+    })
   ],
   server: {
     host: '0.0.0.0'
   },
 
   build: {
+    chunkSizeWarningLimit: 1500,
     outDir: './dist',
     rollupOptions: {
       output: {

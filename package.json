@@ -23,6 +23,7 @@
   "devDependencies": {
     "@types/node": "^18.7.18",
     "@vitejs/plugin-vue": "^3.1.0",
+    "gifsicle": "^7.0.1",
     "http-server": "^14.1.1",
     "sass": "^1.54.9",
     "terser": "^5.15.0",
@@ -32,6 +33,7 @@
     "vite": "^3.1.2",
     "vite-copy-plugin": "^0.4.0",
     "vite-plugin-prerender": "^1.0.8",
+    "vite-plugin-progress": "^0.0.4",
     "vite-svg-loader": "^3.6.0",
     "vue-tsc": "^0.40.13"
   }
