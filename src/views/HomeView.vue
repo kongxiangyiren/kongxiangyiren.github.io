@@ -61,13 +61,13 @@
         </div>
       </div>
       <div class="right2">
-        <span id="busuanzi_container_site_pv">
+        <span id="busuanzi_container_site_pv" style="display: inline">
           本站总访问量
           <span id="busuanzi_value_site_pv">99</span>
           次
         </span>
         <br />
-        <span id="busuanzi_container_site_uv">
+        <span id="busuanzi_container_site_uv" style="display: inline">
           本站总访客数
           <span id="busuanzi_value_site_uv">99</span>
           人
