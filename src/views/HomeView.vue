@@ -86,7 +86,7 @@
     {
       value: '开发者搜索',
       label: '开发者搜索',
-      href: 'https://kaifa.baidu.com/searchPage?module=SUG&wd='
+      href: 'https://kaifa.baidu.com/searchPage?wd='
     },
     {
       value: '必应',
@@ -96,7 +96,7 @@
     {
       value: '百度',
       label: '百度',
-      href: 'https://www.baidu.com/s?&tn=68018901_2_oem_dgie=utf-8&wd='
+      href: 'https://www.baidu.com/s?wd='
     }
   ];
   function search() {
