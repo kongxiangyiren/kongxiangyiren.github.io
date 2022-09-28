@@ -6,7 +6,9 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "prev": "vue-tsc --noEmit && vite build && cd ./dist && http-server"
+    "prev": "vue-tsc --noEmit && vite build && cd ./dist && http-server",
+    "docker:build": "docker build -t myblog .",
+    "docker:run": "docker run -d -p 9090:9090 --name myblog myblog"
   },
   "dependencies": {
     "axios": "^0.27.2",
