@@ -11,33 +11,33 @@
     "docker:run": "docker run -d -p 9090:9090 --name myblog myblog"
   },
   "dependencies": {
-    "axios": "^0.27.2",
+    "axios": "^1.1.2",
     "element-plus": "^2.2.17",
     "gitalk": "^1.8.0",
     "jquery": "^3.6.1",
     "live2d-widget": "^3.1.4",
     "live2d-widget-model-koharu": "^1.0.5",
     "my_effect": "file:my_effect",
-    "vconsole": "^3.14.6",
-    "vue": "^3.2.39",
+    "vconsole": "^3.14.7",
+    "vue": "^3.2.40",
     "vue-router": "^4.1.5",
     "vue-wechat-title": "^2.0.7"
   },
   "devDependencies": {
-    "@types/node": "^18.7.18",
-    "@vitejs/plugin-vue": "^3.1.0",
+    "@types/node": "^18.8.3",
+    "@vitejs/plugin-vue": "^3.1.2",
     "gifsicle": "^7.0.1",
     "http-server": "^14.1.1",
-    "sass": "^1.54.9",
-    "terser": "^5.15.0",
-    "typescript": "^4.8.3",
+    "sass": "^1.55.0",
+    "terser": "^5.15.1",
+    "typescript": "^4.8.4",
     "unplugin-auto-import": "^0.11.2",
-    "unplugin-vue-components": "^0.22.7",
-    "vite": "^3.1.2",
+    "unplugin-vue-components": "^0.22.8",
+    "vite": "^3.1.6",
     "vite-copy-plugin": "^0.4.0",
     "vite-plugin-prerender": "^1.0.8",
-    "vite-plugin-progress": "^0.0.4",
+    "vite-plugin-progress": "^0.0.5",
     "vite-svg-loader": "^3.6.0",
-    "vue-tsc": "^0.40.13"
+    "vue-tsc": "^1.0.0"
   }
 }
