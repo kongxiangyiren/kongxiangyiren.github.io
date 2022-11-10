@@ -9,7 +9,7 @@
       <router-link to="/message">留言</router-link>
     </div>
     <div class="menus hidden-sm-and-up">
-      <Menu @click="drawer = !drawer"></Menu>
+      <component :is="Menu" @click="drawer = !drawer"></component>
       <el-drawer v-model="drawer" size="75%" title="菜单" :with-header="false">
         <div class="title">菜单</div>
         <hr />

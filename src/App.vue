@@ -35,7 +35,7 @@
   // import Denglong1 from './components/denglong.vue';
 
   var OriginTitile = document.title;
-  var titleTime: NodeJS.Timeout;
+  var titleTime: any;
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) {
       document.title = '糟糕,网页崩溃了!!!';

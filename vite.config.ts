@@ -49,6 +49,7 @@ export default defineConfig({
 
   build: {
     chunkSizeWarningLimit: 1500,
+    reportCompressedSize: false,
     outDir: './dist',
     rollupOptions: {
       output: {
