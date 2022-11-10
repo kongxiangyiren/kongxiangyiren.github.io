@@ -32,7 +32,7 @@ export default defineConfig({
       // Required - The path to the vite-outputted app to prerender.
       staticDir: join(__dirname, 'dist'),
       // Required - Routes to render.
-      routes: ['/', '/home', '/download', '/message', '/404']
+      routes: ['/', '/home', '/download', '/message', '/404', '/redirect']
     }),
     CopyPlugin([
       { from: './node_modules/live2d-widget-model-koharu', to: 'dist/live2d-widget-model-koharu' }
