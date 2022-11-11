@@ -1,1 +1,0 @@
-import{x as a,o as s,e,s as d,v as n,i as t}from"./index-cee673e7.js";const o={},r=a=>(d("data-v-ed8f0abb"),a=a(),n(),a),c={class:"notPages"},i=[r((()=>t("h1",null,"404",-1))),r((()=>t("div",null,"对不起，您找的页面不存在",-1)))];const l=a(o,[["render",function(a,d){return s(),e("div",c,i)}],["__scopeId","data-v-ed8f0abb"]]);export{l as default};
