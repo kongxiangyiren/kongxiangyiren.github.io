@@ -27,6 +27,12 @@
   import zip from '@/assets/zip.svg';
   const file = [
     {
+      name: '孤独摇滚表情包.zip',
+      icon: zip,
+      time: '2022-12-09',
+      file: import('@/down/孤独摇滚表情包.zip?url')
+    },
+    {
       name: '蜜汁工坊-公主连结表情包.zip',
       icon: zip,
       time: '2022-09-15',
