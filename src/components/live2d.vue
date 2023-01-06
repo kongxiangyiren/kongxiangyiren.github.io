@@ -82,4 +82,11 @@
   });
 </script>
 
+<style lang="scss">
+  //  会话框高度
+  // .live2d-widget-dialog-container {
+  //   bottom: 100%;
+  // }
+</style>
+
 <style scoped lang="scss"></style>
