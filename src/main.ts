@@ -4,11 +4,9 @@ import App from './App.vue';
 import router from './router';
 import vueWechatTitle from 'vue-wechat-title';
 // 点击效果
-import { clicker } from 'my_effect';
+import clicker from 'my-clicker';
 //鼠标点击
-clicker(false, true);
-// 默哀
-let year = new Date().getFullYear(); //年
+clicker(false, true, false, false);
 
 const app = createApp(App);
 app.use(router).use(vueWechatTitle);
