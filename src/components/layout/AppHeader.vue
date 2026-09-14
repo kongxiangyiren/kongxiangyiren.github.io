@@ -14,13 +14,14 @@
     - 右侧滑入的 transition，且尊重 reduce motion（`:css` 开关）
 -->
 <script setup lang="ts">
-import { computed, onScopeDispose, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useEventListener, useMediaQuery, usePreferredReducedMotion } from '@vueuse/core'
 import { useRoute } from 'vue-router'
 
 import AppIcon from '@/components/common/AppIcon.vue'
 import { siteConfig } from '@/config/site'
 import { useFocusTrap } from '@/composables/useFocusTrap'
+import { useScrollLock } from '@/composables/useScrollLock'
 import { useTheme } from '@/composables/useTheme'
 
 /** 越过这个距离才允许收起，避免刚滚动一点点就闪 */
@@ -83,20 +84,10 @@ function closeDrawer(): void {
 useFocusTrap({ container: panel, open: drawerOpen, onClose: closeDrawer })
 
 /*
- * 滚动锁。
- * `overflow: hidden` 写在 body 上：body 的 overflow 会在 html 为 `visible` 时**传播到视口**，
- * 所以它能锁住整页滚动，且不需要 `position: fixed` 那套（那会让页面跳到顶部）。
- * 不做 padding 补偿也不会抖 —— html 上有 `scrollbar-gutter: stable`（见 tailwind.css），
- * 滚动条的位置一直是预留着的，包括 `position: fixed` 的顶栏也不会横移。
+ * 滚动锁：抽屉与详情页的 lightbox 共用 `useScrollLock`（引用计数 + 原值还原）。
+ * 实现细节与「为什么不需要补偿滚动条宽度」见 src/composables/useScrollLock.ts。
  */
-watch(drawerOpen, (open) => {
-  document.body.style.overflow = open ? 'hidden' : ''
-})
-
-// 打开状态下被卸载也不能把滚动锁留在页面上
-onScopeDispose(() => {
-  document.body.style.overflow = ''
-})
+useScrollLock(drawerOpen)
 
 // 拖到桌面宽度时抽屉被 `md:hidden` 藏起来，状态必须一起收掉，否则滚动锁会永久卡住
 const isDesktop = useMediaQuery('(min-width: 768px)')

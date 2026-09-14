@@ -6,6 +6,8 @@ export type IconName =
   | 'close'
   | 'arrow-up'
   | 'arrow-down'
+  | 'arrow-left'
+  | 'arrow-right'
   | 'calendar'
   | 'clock'
   | 'folder'

@@ -57,6 +57,17 @@ const props = defineProps<{ name: IconName }>()
       <path d="m19 12-7 7-7-7" />
     </g>
 
+    <!-- 与 arrow-up / arrow-down 同一套 stroke 参数（继承根 <svg> 的描边设置） -->
+    <g v-else-if="props.name === 'arrow-left'">
+      <path d="M19 12H5" />
+      <path d="m12 19-7-7 7-7" />
+    </g>
+
+    <g v-else-if="props.name === 'arrow-right'">
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
+    </g>
+
     <g v-else-if="props.name === 'calendar'">
       <rect x="3" y="5" width="18" height="16" rx="2" />
       <path d="M8 3v4" />
@@ -103,7 +114,8 @@ const props = defineProps<{ name: IconName }>()
       />
     </g>
 
-    <g v-else>
+    <!-- 链路图标（`link`）—— 以前挂在 v-else 上，现在 IconName 已显式列出，改为具名分支 -->
+    <g v-else-if="props.name === 'link'">
       <path d="M10.6 13.4a4 4 0 0 0 5.66 0l3.1-3.1a4 4 0 0 0-5.66-5.66l-1.2 1.2" />
       <path d="M13.4 10.6a4 4 0 0 0-5.66 0l-3.1 3.1a4 4 0 0 0 5.66 5.66l1.2-1.2" />
     </g>

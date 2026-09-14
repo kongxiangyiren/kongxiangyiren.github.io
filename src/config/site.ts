@@ -47,6 +47,10 @@ export interface SiteConfig {
   footerStartDate: string
   /** 备案号。境外服务器无备案 → 留空，页脚整行不渲染 */
   icp: string
+  /** 文章版权协议名。留空则版权卡只显示作者与链接，不显示协议 */
+  license: string
+  /** 协议详情链接 */
+  licenseUrl: string
 }
 
 export const siteConfig: SiteConfig = {
@@ -76,4 +80,6 @@ export const siteConfig: SiteConfig = {
   postsPerPage: 2,
   footerStartDate: '2026-01-01',
   icp: '',
+  license: 'CC BY-NC-SA 4.0',
+  licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
 }

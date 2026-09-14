@@ -143,6 +143,13 @@
     max-width: 100%;
     height: auto;
     border-radius: 8px;
+    // 点开看大图（见 src/components/post/ImageLightbox.vue）—— 给一个指针提示
+    cursor: zoom-in;
+  }
+
+  // 被显式包在链接里的图片不参与放大（事件委托会放过 a > img），保持链接的指针语义
+  a > img {
+    cursor: pointer;
   }
 
   // 行内代码：只作用于非代码块内的 <code>
