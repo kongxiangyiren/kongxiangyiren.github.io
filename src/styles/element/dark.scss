@@ -1,0 +1,28 @@
+/*
+ * Element Plus 暗色背景对齐 Butterfly 令牌
+ *
+ * 与 index.scss 的区别：这里**必须自己负责输出 CSS**（html.dark { --el-* }），
+ * 因为 EP 官方在 SCSS 按需模式下并不会自动引入 dark 变量，而且
+ * `element-plus/theme-chalk/src/dark/css-vars.scss` 是 `@use './var' as *`
+ * 不带配置的 —— 单独 import 它只会拿到 EP 默认暗色背景，拿不到这里的 $bg-color 覆盖。
+ * => 只有把「配置 dark/var.scss」和「输出 css-vars」放进同一次 scss 编译才生效。
+ *
+ * 顺序不可调换：
+ *   1. 先 @use index.scss —— 让 common/var.scss 带着我们的 primary 被配置好，
+ *      否则 dark/var.scss 会先以默认值加载 common/var.scss，
+ *      随后 additionalData 注入的 index.scss 再想 configure 就会
+ *      「module was already loaded」报错。
+ *   2. 再 @forward dark/var.scss with($bg-color) —— 覆盖暗色背景。
+ *   3. 最后 @use dark/css-vars.scss —— 真正吐出 html.dark 下的 --el-* 变量。
+ */
+@use './index.scss' as ep-light-vars;
+
+@forward 'element-plus/theme-chalk/src/dark/var.scss' with (
+  $bg-color: (
+    'page': #121212,
+    '': #1f1f1f,
+    'overlay': #1d1e1f,
+  )
+);
+
+@use 'element-plus/theme-chalk/src/dark/css-vars.scss';

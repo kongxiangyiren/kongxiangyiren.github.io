@@ -1,0 +1,206 @@
+/*
+ * 文章正文（v-html 注入的构建期产物）样式。
+ *
+ * 为什么这块用 Sass 而不是 Tailwind 工具类：
+ *   正文 HTML 是构建期由 markdown-it 生成的，运行时无法往这些标签上挂 class。
+ *   要么在 markdown-it 渲染规则里硬写一大串工具类（脆弱且难维护），要么在这里
+ *   统一定义。这里选了后者 —— 它是「生成内容的样式」，属于 Sass 的正当职责范围。
+ *
+ * 颜色一律引用 tailwind.css 里的设计令牌，不出现任何字面色值。
+ * 全站禁止 !important：下面 Shiki 的暗色切换靠**特异性**取胜，不靠 !important。
+ */
+
+// ---------------------------------------------------------------------------
+// Shiki dual-theme
+//
+// 插件用 `defaultColor: false` 编译，产物里的 <pre>/<span> **只有** CSS 自定义属性
+// （--shiki-light / --shiki-dark / *-bg），没有任何内联 color。
+// 正因为没有内联声明，这里两条普通规则就能完成主题切换，不需要 !important。
+// ---------------------------------------------------------------------------
+.shiki {
+  background-color: var(--shiki-light-bg);
+}
+
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+}
+
+[data-theme='dark'] .shiki {
+  background-color: var(--shiki-dark-bg);
+}
+
+// 特异性 (0,2,1) > (0,1,1)，稳赢上面那条亮色规则
+[data-theme='dark'] .shiki span {
+  color: var(--shiki-dark);
+}
+
+// ---------------------------------------------------------------------------
+// 正文排版
+// ---------------------------------------------------------------------------
+.markdown-body {
+  color: var(--font-color);
+  font-size: 1rem;
+  line-height: 1.75;
+  overflow-wrap: break-word;
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    // 锚点跳转时不要被固定顶栏盖住
+    scroll-margin-top: 5rem;
+    font-weight: 600;
+    line-height: 1.35;
+    margin: 1.75em 0 0.75em;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+    padding-bottom: 0.35em;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  h3 {
+    font-size: 1.175rem;
+  }
+
+  h4 {
+    font-size: 1rem;
+  }
+
+  p {
+    margin: 0.9em 0;
+  }
+
+  a {
+    color: var(--primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  strong {
+    font-weight: 600;
+  }
+
+  ul,
+  ol {
+    margin: 0.9em 0;
+    padding-left: 1.6em;
+  }
+
+  ul {
+    list-style: disc;
+  }
+
+  ol {
+    list-style: decimal;
+  }
+
+  li + li {
+    margin-top: 0.35em;
+  }
+
+  blockquote {
+    margin: 1.2em 0;
+    padding: 0.6em 1em;
+    color: var(--font-color);
+    border-left: 4px solid var(--primary);
+    background-color: var(--card-hover-bg);
+    border-radius: 0 6px 6px 0;
+  }
+
+  blockquote > :first-child {
+    margin-top: 0;
+  }
+
+  blockquote > :last-child {
+    margin-bottom: 0;
+  }
+
+  hr {
+    margin: 2em 0;
+    border: 0;
+    border-top: 1px solid var(--border-color);
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  // 行内代码：只作用于非代码块内的 <code>
+  :not(pre) > code {
+    padding: 0.15em 0.4em;
+    font-size: 0.875em;
+    color: var(--primary);
+    background-color: var(--card-hover-bg);
+    border-radius: 4px;
+  }
+
+  // -------------------------------------------------------------------------
+  // 代码块外壳（Shiki 只负责上色，其余排版归这里）
+  // -------------------------------------------------------------------------
+  pre.shiki {
+    margin: 1.2em 0;
+    padding: 1em 1.15em;
+    font-size: 0.875rem;
+    line-height: 1.65;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow-x: auto;
+    tab-size: 2;
+
+    &:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+  }
+
+  pre.shiki code {
+    font-family:
+      'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace;
+    background: none;
+    padding: 0;
+  }
+
+  // -------------------------------------------------------------------------
+  // 表格：外层滚动，避免长表格撑破布局
+  // -------------------------------------------------------------------------
+  table {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+    margin: 1.2em 0;
+    border-collapse: collapse;
+    overflow-x: auto;
+    font-size: 0.9375rem;
+  }
+
+  th,
+  td {
+    padding: 0.5em 0.9em;
+    border: 1px solid var(--border-color);
+  }
+
+  th {
+    font-weight: 600;
+    background-color: var(--card-hover-bg);
+  }
+}

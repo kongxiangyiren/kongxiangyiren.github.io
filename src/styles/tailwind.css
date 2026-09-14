@@ -1,0 +1,97 @@
+/*
+ * Tailwind 入口 —— 设计令牌体系的唯一来源（纯 CSS，禁止改成 .scss）
+ *
+ * 分层边界：
+ *   - Tailwind：布局、间距、颜色、设计令牌
+ *   - Sass（src/styles/scss/*.scss）：仅组件内复杂样式、动画、keyframes、mixin
+ *   - 禁止用 Sass 重写 Tailwind 已覆盖的间距 / 颜色
+ *
+ * 注意：Element Plus 的样式是由 JS `import` 的 scss，无法用 layer() 包住，
+ *       所以这里不写 EP 的 @import。EP 未分层 => 工具类压不住 EP 内部样式，
+ *       需要微调 EP 时用组件内 scoped `:deep()`，不要用 `!` 前缀堆砌类名。
+ */
+@import 'tailwindcss' source(none);
+
+/*
+ * 显式限定扫描范围。
+ *
+ * 默认会自动扫描整个项目根目录，于是 plugins/*.ts 里的 `!inline ||` 会被当成
+ * bang 前缀的候选类，生成一条没用的 `.\!inline{display:inline!important}`；
+ * content/*.md 里的代码块同样会污染候选集。Tailwind 类只会出现在 src/ 与
+ * index.html 里，所以直接 source(none) + 显式 @source，顺带让扫描更快。
+ */
+@source '../../src';
+@source '../../index.html';
+
+/* 让 `dark:` 跟随 data-theme 而非系统偏好 —— 必须，否则切主题时 Tailwind 部分不跟着变 */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/*
+ * @theme inline：工具类直接输出 `var(--primary)` 这样的引用，而不是把色值内联死，
+ * 这样运行时切换 :root / [data-theme] 上的令牌即可全站换色。
+ * （门禁 0.4 的验证对象）
+ */
+@theme inline {
+  --color-primary: var(--primary);
+  --color-card: var(--card-bg);
+  --color-card-hover: var(--card-hover-bg);
+  --color-font: var(--font-color);
+  --color-global: var(--global-bg);
+
+  /*
+   * 批次 1 新增：唯一一个新增令牌。
+   * 分隔线在 Header / Footer / 文章正文（hr、表格、引用块）/ 标签胶囊上都要用，
+   * 没有它就只能到处写 color-mix，或者拿 --card-hover-bg 当边框色凑合。
+   * 已按约定同时加在 :root 与 [data-theme='dark']，并在此注册。
+   */
+  --color-border: var(--border-color);
+
+  /* 圆角 / 阴影 / 断点沿用 Tailwind 默认，按需再补 */
+}
+
+/*
+ * 主题令牌用普通 CSS 定义（不是 @theme），才能被 [data-theme] 覆盖。
+ * 命名对齐 Hexo Butterfly 的变量体系。
+ */
+:root {
+  color-scheme: light;
+
+  /* 主题蓝，Butterfly 默认值，不可改 */
+  --primary: #49b1f5;
+  --theme-color: var(--primary);
+
+  --card-bg: #ffffff;
+  --card-hover-bg: #f6f8fa;
+  --font-color: #4c4948;
+  --global-bg: #f6f8fa;
+  --border-color: #e3e8ed;
+
+  --scrollbar-color: #49b1f5;
+  --scrollbar-hover-color: #1677b3;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --card-bg: #1f1f1f;
+  --card-hover-bg: #121212;
+  --font-color: #c4c4c4;
+  --global-bg: #121212;
+  --border-color: #2f2f2f;
+}
+
+@layer base {
+  html {
+    background-color: var(--global-bg);
+  }
+
+  body {
+    background-color: var(--global-bg);
+    color: var(--font-color);
+    font-family:
+      'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+      'Microsoft YaHei', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

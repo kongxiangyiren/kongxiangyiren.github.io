@@ -1,0 +1,18 @@
+/*
+ * Element Plus 主色覆盖（SCSS 变量方案）
+ *
+ * 该文件由 `vite.config.ts` 的 `css.preprocessorOptions.scss.additionalData`
+ * 注入到**每一个 element-plus 自己的 scss 文件**顶部（函数形式，只匹配 element-plus 路径）。
+ *
+ * 用 `@forward ... with` 而不是 `@import`（Sass 官方将移除 `@import`）。
+ * 只覆盖 primary.base，其余沿用 EP 默认；EP 的 light-1..9 / dark-2 会在编译期从
+ * base 重新派生（见 theme-chalk/src/common/var.scss 的 set-color-mix-level），
+ * 所以不需要手工补 light-*。若日后出现色调不匀，再显式覆盖 light-3/5/7/8/9。
+ */
+@forward 'element-plus/theme-chalk/src/common/var.scss' with (
+  $colors: (
+    'primary': (
+      'base': #49b1f5,
+    ),
+  )
+);

@@ -1,0 +1,86 @@
+/*
+ * Butterfly 风格自研样式：动画 / keyframes / mixin
+ *
+ * 分层边界（硬约束）：
+ *   - Tailwind 只管：布局、间距、颜色、设计令牌
+ *   - Sass 只管：组件内复杂样式、动画、keyframes、mixin
+ *   - 禁止用 Sass 重写 Tailwind 已覆盖的间距 / 颜色
+ *   - 禁止使用 `!important`：EP 样式未分层压不住时，请用组件内 scoped `:deep()`
+ *
+ * 本阶段只放「地基级」内容，业务动效在后续任务里按需追加。
+ */
+
+// ---------------------------------------------------------------------------
+// 平滑滚动
+// ---------------------------------------------------------------------------
+html {
+  scroll-behavior: smooth;
+}
+
+// 尊重用户的「减少动态效果」偏好
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 滚动条美化（Butterfly 同款细滚动条）
+// ---------------------------------------------------------------------------
+// Firefox
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-color) transparent;
+}
+
+// WebKit / Blink
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-color);
+  border-radius: 4px;
+
+  &:hover {
+    background-color: var(--scrollbar-hover-color);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 预留 mixin / keyframes（后续卡片、目录、阅读进度等复用）
+// ---------------------------------------------------------------------------
+
+/// 卡片悬停上浮 + 阴影，Butterfly 文章卡片的经典手感
+@mixin card-hover-lift($offset: 4px, $duration: 0.3s) {
+  transition:
+    transform $duration ease,
+    box-shadow $duration ease;
+
+  &:hover {
+    transform: translateY(-$offset);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+  }
+}
+
+@keyframes butterfly-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/// 入场动画工具类
+.butterfly-fade-in {
+  animation: butterfly-fade-in 0.5s ease both;
+}

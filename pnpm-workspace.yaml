@@ -1,0 +1,12 @@
+# pnpm 12 的构建脚本白名单。
+#
+# 起因：sass@1.104.1（经 sass-embedded 传入）依赖 @parcel/watcher，它带 install 脚本。
+# pnpm 12 默认拒绝执行未批准的构建脚本，并在第一次遇到时往这里写下一句占位文案
+# `set this to true or false` —— 占位符没被替换会让 `pnpm install` 以
+# ERR_PNPM_IGNORED_BUILDS 非零退出（批次 0 遗留，批 1 修正）。
+#
+# 取值 false 的理由：@parcel/watcher 只被 sass 的 **CLI `--watch`** 模式用到，
+# 本项目走 Vite 的文件监听，从不用 sass CLI；实测在「不构建」状态下
+# pnpm build / type-check / lint 全绿，所以显式拒绝是零风险的。
+allowBuilds:
+  '@parcel/watcher': false

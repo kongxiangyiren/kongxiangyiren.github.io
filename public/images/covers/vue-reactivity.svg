@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="Vue 3 响应式文章封面">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#49b1f5" />
+      <stop offset="100%" stop-color="#1677b3" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <g fill="none" stroke="#ffffff" stroke-linecap="round" stroke-width="6" opacity="0.85">
+    <path d="M420 315h120" />
+    <path d="M660 315h120" />
+    <path d="M540 315c40 0 40-95 80-95" />
+    <path d="M540 315c40 0 40 95 80 95" />
+  </g>
+  <g fill="#ffffff">
+    <circle cx="350" cy="315" r="46" />
+    <circle cx="615" cy="220" r="34" opacity="0.8" />
+    <circle cx="615" cy="410" r="34" opacity="0.8" />
+    <circle cx="850" cy="315" r="46" />
+  </g>
+  <g fill="#ffffff" font-family="Helvetica, Arial, sans-serif">
+    <text x="350" y="328" font-size="34" font-weight="700" text-anchor="middle" fill="#1677b3">track</text>
+    <text x="850" y="328" font-size="34" font-weight="700" text-anchor="middle" fill="#1677b3">run</text>
+  </g>
+</svg>
