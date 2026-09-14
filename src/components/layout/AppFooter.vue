@@ -1,45 +1,16 @@
 <!--
   页脚：运行时长实时计时 + 版权 + 备案占位 + 社交图标。
   站点信息全部来自 src/config/site.ts。
+
+  计时与日期计算不在本组件里 —— 见 `useUptime()`（关于页也要显示运行时长），
+  数学部分在 `src/utils/uptime.ts`。
 -->
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-
 import AppIcon from '@/components/common/AppIcon.vue'
 import { siteConfig } from '@/config/site'
+import { useUptime } from '@/composables/useUptime'
 
-/** 起算日按本地零点解析（不加 Z），避免时区偏移让天数差一天 */
-const startedAt = new Date(`${siteConfig.footerStartDate}T00:00:00`).getTime()
-const startYear = new Date(startedAt).getFullYear()
-
-const now = ref(Date.now())
-let timer: number | undefined
-
-onMounted(() => {
-  timer = window.setInterval(() => {
-    now.value = Date.now()
-  }, 1000)
-})
-
-onBeforeUnmount(() => {
-  if (timer !== undefined) window.clearInterval(timer)
-})
-
-const uptime = computed(() => {
-  const totalSeconds = Math.max(0, Math.floor((now.value - startedAt) / 1000))
-  return {
-    days: Math.floor(totalSeconds / 86400),
-    hours: Math.floor((totalSeconds % 86400) / 3600),
-    minutes: Math.floor((totalSeconds % 3600) / 60),
-    seconds: totalSeconds % 60,
-  }
-})
-
-const currentYear = computed(() => new Date(now.value).getFullYear())
-
-const copyrightYears = computed(() =>
-  currentYear.value > startYear ? `${startYear} - ${currentYear.value}` : String(startYear),
-)
+const { parts: uptime, copyrightYears } = useUptime()
 </script>
 
 <template>

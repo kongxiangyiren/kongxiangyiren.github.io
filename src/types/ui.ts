@@ -4,6 +4,7 @@ export type IconName =
   | 'moon'
   | 'menu'
   | 'close'
+  | 'search'
   | 'arrow-up'
   | 'arrow-down'
   | 'arrow-left'

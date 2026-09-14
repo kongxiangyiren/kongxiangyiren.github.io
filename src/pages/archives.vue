@@ -1,31 +1,33 @@
 <!--
-  归档页 —— 最小可用版：按年 / 月分组。
-  时间轴视觉（el-timeline）与折叠交互在下一批。
+  归档页 —— Butterfly 的时间线观感。
+  视觉与 DOM 方案都在 `src/components/blog/ArchiveTimeline.vue` 里；本页只负责
+  「取数据 + 空状态 + 页头计数」。
 -->
 <script setup lang="ts">
+import { computed } from 'vue'
 import { archives } from 'virtual:blog/taxonomy'
 
-import PostLinkList from '@/components/blog/PostLinkList.vue'
+import ArchiveTimeline from '@/components/blog/ArchiveTimeline.vue'
+
+const total = computed(() => archives.reduce((sum, year) => sum + year.count, 0))
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
-    <h1 class="text-2xl font-semibold text-font">归档</h1>
+    <header class="flex flex-col gap-1">
+      <h1 class="text-2xl font-semibold text-font">归档</h1>
+      <p v-if="total > 0" class="text-sm text-font opacity-70">
+        共 {{ archives.length }} 年 · {{ total }} 篇文章
+      </p>
+    </header>
 
-    <p v-if="archives.length === 0" class="text-sm text-font opacity-70">还没有文章。</p>
+    <p
+      v-if="archives.length === 0"
+      class="rounded-lg border border-border bg-card p-6 text-sm text-font opacity-70"
+    >
+      还没有文章，先去写一篇吧。
+    </p>
 
-    <section v-for="year in archives" :key="year.year" class="flex flex-col gap-3">
-      <h2 class="text-lg font-semibold text-font">
-        {{ year.year }}
-        <span class="text-sm font-normal opacity-60">{{ year.count }} 篇</span>
-      </h2>
-
-      <div v-for="month in year.months" :key="month.month" class="flex flex-col gap-2">
-        <h3 class="font-mono text-sm text-font opacity-70">
-          {{ year.year }}-{{ String(month.month).padStart(2, '0') }}
-        </h3>
-        <PostLinkList :posts="month.posts" />
-      </div>
-    </section>
+    <ArchiveTimeline v-else :years="archives" />
   </div>
 </template>

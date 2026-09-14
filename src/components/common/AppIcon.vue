@@ -47,6 +47,12 @@ const props = defineProps<{ name: IconName }>()
       <path d="m6 6 12 12" />
     </g>
 
+    <!-- 放大镜：沿用同一套 24×24 / stroke-width 2 的风格，圆 + 一条 45° 手柄 -->
+    <g v-else-if="props.name === 'search'">
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.6-3.6" />
+    </g>
+
     <g v-else-if="props.name === 'arrow-up'">
       <path d="M12 19V5" />
       <path d="m5 12 7-7 7 7" />

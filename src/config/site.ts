@@ -27,6 +27,24 @@ export interface SiteAuthor {
   bio: string
 }
 
+/** 关于页「个人时间线」的一条 */
+export interface TimelineEntry {
+  /** `YYYY-MM` 或 `YYYY-MM-DD`，**原样展示**（不做 Date 解析，避免时区漂移） */
+  date: string
+  title: string
+  /** 可选，一两句话说明 */
+  description?: string
+}
+
+/** 友链页的一张卡片 */
+export interface FriendLink {
+  name: string
+  /** 头像图片地址（本地 `/images/...` 或外链均可）；加载失败时退化成首字占位块 */
+  avatar: string
+  description: string
+  url: string
+}
+
 export interface SiteConfig {
   title: string
   /** 首屏打字机用的副标题（可含多个句号分隔的短句，会循环播放） */
@@ -51,6 +69,34 @@ export interface SiteConfig {
   license: string
   /** 协议详情链接 */
   licenseUrl: string
+  /**
+   * 关于页的「技能 / 兴趣」标签。
+   *
+   * ⚠️ **空数组（默认）时整个区块不渲染** —— 这里刻意留空，因为站点信息只有站长自己
+   * 知道，任何预填值都是编造。条目形状见文件末尾的注释示例。
+   */
+  skills: string[]
+  /**
+   * 关于页的「个人时间线」。
+   *
+   * ⚠️ 同上：默认空数组 = 该区块不渲染。**不要填你没经历过的事**。
+   */
+  timeline: TimelineEntry[]
+  /**
+   * 友链列表。空数组时友链页显示「还没有友链」的空状态（申请说明照常显示）。
+   *
+   * ⚠️ 默认空数组是为了不虚构真实友链；形状见文件末尾的注释示例。
+   */
+  friends: FriendLink[]
+  /**
+   * 「申请友链」区块的说明文案。
+   *
+   * 这里给了一句中性的默认文案（没有涉及任何个人信息），站长可以改成自己的联系方式。
+   * 留空字符串则整块不渲染。
+   */
+  friendApplyNote: string
+  /** 申请要求清单。空数组则该列表不渲染（说明文案仍会显示） */
+  friendApplyRules: string[]
 }
 
 export const siteConfig: SiteConfig = {
@@ -82,4 +128,35 @@ export const siteConfig: SiteConfig = {
   icp: '',
   license: 'CC BY-NC-SA 4.0',
   licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+
+  /*
+   * ⚠️ 下面是给站长填的占位。默认全部留空 —— 编造个人经历/友链比留白糟糕得多。
+   * 填上就会自动多出对应区块，留空则该区块整块不渲染（不是渲染成空白块）。
+   *
+   * skills: ['TypeScript', 'Vue', 'Node.js', '构建工具', '摄影'],
+   *
+   * timeline: [
+   *   { date: '2026-09', title: '博客重新开张', description: '决定把自己写的东西留下来。' },
+   * ],
+   *
+   * friends: [
+   *   {
+   *     name: '示例友链',
+   *     avatar: 'https://example.com/avatar.png',
+   *     description: '一句话介绍这位朋友在写什么',
+   *     url: 'https://example.com',
+   *   },
+   * ],
+   */
+  skills: [],
+  timeline: [],
+  friends: [],
+
+  friendApplyNote:
+    '欢迎交换友链。把下面的信息发我一份（名称、头像地址、一句话简介、站点地址），我加好后会去回访。',
+  friendApplyRules: [
+    '站点有个性化的原创内容，且能持续更新',
+    '已添加本站友链，或同意互访后再加',
+    '页面整洁，无自动播放音频与弹窗',
+  ],
 }
