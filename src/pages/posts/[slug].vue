@@ -3,8 +3,11 @@
   元数据（标题 / 日期 / 标签 / TOC 之外的摘要信息）来自 `virtual:blog/posts`，
   正文 HTML + TOC 是**独立资源**，进页面后才按需 fetch（`src/api/post.ts` 里带缓存）。
 
-  TOC 滚动高亮、上下篇导航、版权卡、图片放大属于批 2B；这一批只把异步加载链路
-  （含 el-skeleton 加载态与失败态）准备好。
+  加载态用自研的 `PostSkeleton`（已删 el-skeleton，首页 EP 零依赖）。
+
+  TOC 滚动高亮、上下篇导航、版权卡、图片放大（lightbox）属于批 2B-2，
+  本批只为 lightbox 留了接入点（见正文下方注释），不写任何实现，更不能让相关代码
+  进首页 chunk。
 -->
 <script setup lang="ts">
 import { computed, ref, watch, watchEffect } from 'vue'
@@ -13,6 +16,7 @@ import { posts } from 'virtual:blog/posts'
 
 import { loadPostBody } from '@/api/post'
 import AppIcon from '@/components/common/AppIcon.vue'
+import PostSkeleton from '@/components/common/PostSkeleton.vue'
 import { siteConfig } from '@/config/site'
 import type { BlogPostBody } from '@/types/blog'
 import { formatPostDate, toDateTimeAttr } from '@/utils/date'
@@ -94,8 +98,8 @@ watchEffect(() => {
     <!-- 加载态：正文是独立资源，网络慢时用骨架屏兜住高度 -->
     <div v-if="loading" class="flex flex-col gap-5" aria-busy="true" aria-live="polite">
       <span class="sr-only">正在加载正文…</span>
-      <el-skeleton :rows="8" animated />
-      <el-skeleton :rows="6" animated />
+      <PostSkeleton :lines="8" />
+      <PostSkeleton :lines="6" />
     </div>
 
     <div
@@ -125,6 +129,12 @@ watchEffect(() => {
       <!--
         构建期产物，来源是本仓库 content/ 下的 Markdown（单作者可信内容），
         运行时不接受任何用户输入，所以 v-html 是安全的。
+
+        ［批 2B-2 接入点 —— 图片放大 lightbox］
+        自研 lightbox 必须 `import()` 动态加载，**绝不能进首页 chunk**。
+        计划在这里用**事件委托**（在 markdown-body 上监听 click，命中 `img` 才
+        动态 import 并打开），而不是给每张图绑监听，也不是用 el-image ——
+        el-image 静态依赖整个 ElImageViewer。本批不实现，只留这个接缝。
       -->
       <div class="markdown-body" v-html="body.html"></div>
     </template>

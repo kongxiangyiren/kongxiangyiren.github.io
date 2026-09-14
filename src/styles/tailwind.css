@@ -83,6 +83,17 @@
 @layer base {
   html {
     background-color: var(--global-bg);
+
+    /*
+     * 永远为滚动条预留位置。
+     * 两个作用：
+     *   1. 页面内容高度跨过一屏时会突然多出滚动条，整页横移几个像素；预留后不再抖。
+     *   2. 移动端抽屉打开时会给 body 加 `overflow: hidden`（见 AppHeader），
+     *      滚动条因此消失 —— 预留后连 `position: fixed` 的顶栏都不会横移，
+     *      自研抽屉不需要再写 JS 去算滚动条宽度做 padding 补偿。
+     * Safari < 18.2 不支持，会退化成原本的「轻微横移」，不影响可用性。
+     */
+    scrollbar-gutter: stable;
   }
 
   body {

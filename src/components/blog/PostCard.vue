@@ -1,17 +1,20 @@
 <!--
   首页文章卡片（Tailwind 自研，不用 el-card）。
 
-  两个容易踩的点：
-   1. **整卡可点 + 封面可预览**：标题链接用 stretched link（`after:absolute after:inset-0`
-      把伪元素铺满整张卡）实现「整卡可点」；封面容器抬到 z-10，所以点封面走 el-image
-      的预览，点其他地方进详情，两者不打架。标签 / 分类链接同样要 `relative z-10`，
-      否则会被那层伪元素盖住点不到。
-   2. **入场动画与 hover 位移不能写在同一个元素上**：`.butterfly-reveal` 用的是
+  三个容易踩的点：
+   1. **整卡可点**：标题链接用 stretched link（`after:absolute after:inset-0` 把伪元素铺满
+      整张卡）实现「整卡可点」。标签 / 分类链接必须 `relative z-10`，否则会被那层伪元素
+      盖住点不到。
+   2. **封面不再是点击热区**：封面以前用 el-image 承载「点击放大预览」，所以刻意抬到 z-10
+      压住 stretched link。现在封面只是张图、点击放大已移到详情页正文的 lightbox
+      （批 2B-2，动态 import，不进首页 chunk），所以**必须去掉 z-10** —— 留着会变成
+      一块点不动的死区（伪元素被压在下面点不到，而默认 `after:` 层级在封面之上）。
+   3. **入场动画与 hover 位移不能写在同一个元素上**：`.butterfly-reveal` 用的是
       `transform: translateY()`，Tailwind 的 `hover:-translate-y-1` 也用 transform，
       两者特异性接近、顺序不可控。所以外层包一个只负责 reveal 的 div，卡片本体负责 hover。
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 import AppIcon from '@/components/common/AppIcon.vue'
 import { useReveal } from '@/composables/useReveal'
@@ -22,6 +25,14 @@ const props = defineProps<{ post: BlogPostPreview }>()
 
 const { target, revealed } = useReveal()
 const postUrl = computed(() => `/posts/${props.post.slug}`)
+
+/**
+ * 封面加载失败 → 换成占位块。
+ * 特意用 Vue 的 `@error` 而不是内联 `onerror` 字符串：后者在 CSP 下会被拦，
+ * 而且拿不到组件作用域。卡片是 `v-for` 里按 slug `:key` 渲染的，切文章会重新挂载，
+ * 所以不需要额外 watch 重置这个 flag。
+ */
+const coverFailed = ref(false)
 </script>
 
 <template>
@@ -30,32 +41,31 @@ const postUrl = computed(() => `/posts/${props.post.slug}`)
       class="group relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
       <!--
-        有封面：el-image 只负责懒加载。
-        刻意**不开** `preview-src-list` —— el-image 的预览会把 EP 的 image-viewer
-        整个拖进首页 chunk（实测 +120 kB）。「点击放大」属于批 2B，届时再单独按需引入。
+        有封面：原生 <img>。
+        防 CLS 的两道保险：外层容器 `aspect-video`（16:9）先占好位，`width`/`height`
+        属性再给浏览器一个内在宽高比。两者一致，所以图片解码前后盒子尺寸完全相同。
+        加载中不需要额外占位图 —— 容器自带 `bg-card-hover` 底色，图片没来就是一块灰色。
+        `loading="lazy"` + `decoding="async"` 让首屏不为卡片图阻塞。
       -->
-      <div
-        v-if="post.cover"
-        class="relative z-10 aspect-video w-full overflow-hidden bg-card-hover"
-      >
-        <el-image
+      <div v-if="post.cover" class="aspect-video w-full overflow-hidden bg-card-hover">
+        <img
+          v-if="!coverFailed"
           :src="post.cover"
           :alt="`${post.title} 的封面`"
-          fit="cover"
-          lazy
-          class="post-cover"
+          width="640"
+          height="360"
+          loading="lazy"
+          decoding="async"
+          class="h-full w-full object-cover"
+          @error="coverFailed = true"
+        />
+
+        <div
+          v-else
+          class="flex h-full w-full items-center justify-center text-xs text-font opacity-60"
         >
-          <template #placeholder>
-            <div class="h-full w-full bg-card-hover"></div>
-          </template>
-          <template #error>
-            <div
-              class="flex h-full w-full items-center justify-center bg-card-hover text-xs text-font opacity-60"
-            >
-              封面加载失败
-            </div>
-          </template>
-        </el-image>
+          封面加载失败
+        </div>
       </div>
 
       <!-- 无封面：优雅降级 —— 用一条主题色渐变代替图片区，不留破图 -->
@@ -120,17 +130,3 @@ const postUrl = computed(() => `/posts/${props.post.slug}`)
     </article>
   </div>
 </template>
-
-<style lang="scss" scoped>
-/*
- * el-image 的根元素默认是 inline-block 且宽高自适应，撑不满外层容器。
- * EP 样式未分层（ADR-002），工具类压不住它，所以这里用组件内 :deep()（不用 !important）。
- * 特异性：(0,2,0) > EP 的 `.el-image` (0,1,0)。
- * 注意 el-image 会把外部 class 合并到根元素上，所以 `.post-cover` 和 `.el-image` 是同一节点。
- */
-:deep(.post-cover) {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-</style>
