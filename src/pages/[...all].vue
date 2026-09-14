@@ -9,7 +9,8 @@ const route = useRoute()
   <div class="flex flex-col items-center gap-4 py-16 text-center">
     <p class="text-6xl font-bold text-primary">404</p>
     <p class="font-normal text-font">
-      找不到 <code class="rounded border border-border px-1.5 py-0.5 font-mono text-sm">{{
+      找不到
+      <code class="rounded border border-border px-1.5 py-0.5 font-mono text-sm">{{
         route.fullPath
       }}</code>
       这个页面

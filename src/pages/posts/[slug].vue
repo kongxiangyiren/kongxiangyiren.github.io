@@ -61,7 +61,11 @@ watchEffect(() => {
     <nav v-if="post.toc.length > 0" class="rounded-lg border border-border bg-card p-4">
       <p class="mb-2 text-sm font-medium text-font">目录</p>
       <ul class="flex flex-col gap-1 text-sm">
-        <li v-for="item in post.toc" :key="item.id" :style="{ paddingLeft: `${(item.level - 2) * 12}px` }">
+        <li
+          v-for="item in post.toc"
+          :key="item.id"
+          :style="{ paddingLeft: `${(item.level - 2) * 12}px` }"
+        >
           <a :href="`#${item.id}`" class="text-font transition-colors hover:text-primary">
             {{ item.text }}
           </a>
@@ -76,7 +80,10 @@ watchEffect(() => {
     <div class="markdown-body" v-html="post.html"></div>
 
     <footer class="border-t border-border pt-4">
-      <RouterLink to="/" class="inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
+      <RouterLink
+        to="/"
+        class="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+      >
         <AppIcon name="arrow-up" class="h-4 w-4 -rotate-90" />
         返回首页
       </RouterLink>

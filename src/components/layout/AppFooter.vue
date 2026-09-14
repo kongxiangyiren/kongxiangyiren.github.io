@@ -50,8 +50,7 @@ const copyrightYears = computed(() =>
       <p>
         本博客已运行
         <span class="font-medium text-primary">
-          {{ uptime.days }} 天 {{ uptime.hours }} 时 {{ uptime.minutes }} 分
-          {{ uptime.seconds }} 秒
+          {{ uptime.days }} 天 {{ uptime.hours }} 时 {{ uptime.minutes }} 分 {{ uptime.seconds }} 秒
         </span>
       </p>
 
@@ -69,9 +68,7 @@ const copyrightYears = computed(() =>
         </li>
       </ul>
 
-      <p>
-        © {{ copyrightYears }} {{ siteConfig.author.name }} · 由 Vue + Vite 构建
-      </p>
+      <p>© {{ copyrightYears }} {{ siteConfig.author.name }} · 由 Vue + Vite 构建</p>
 
       <!-- 境外服务器无备案 → icp 为空字符串，整行不渲染 -->
       <p v-if="siteConfig.icp" class="text-xs">
