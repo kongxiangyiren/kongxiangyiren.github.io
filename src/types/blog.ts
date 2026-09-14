@@ -46,12 +46,31 @@ export interface BlogPostPreview {
   wordCount: number
 }
 
-/** 详情页用的完整文章 */
-export interface BlogPost extends BlogPostPreview {
+/**
+ * 列表页拿到的文章元数据 —— `virtual:blog/posts` 导出的就是它。
+ *
+ * **不含** `html` / `toc`：正文体积不该拖累任何列表页。正文在独立资源里，
+ * 用下面这个由构建插件算好的 URL 去取（页面不要自己拼路径）。
+ */
+export interface BlogPostMeta extends BlogPostPreview {
+  /**
+   * 正文资源 URL（已含 `import.meta.env.BASE_URL`）。
+   * 形如 `/blog-posts/vue3-reactivity-internals-1a2b3c4d.json`，文件名带内容 hash，
+   * 所以可以配 `immutable` 长缓存。由 plugins/vite-plugin-blog-content.ts 计算。
+   */
+  bodyUrl: string
+}
+
+/** 单篇正文资源的内容形状（构建期 emit 的 JSON，运行时按需 fetch） */
+export interface BlogPostBody {
+  slug: string
   toc: TocItem[]
   /** 构建期由 markdown-it + Shiki 渲染好的 HTML，运行时零解析 */
   html: string
 }
+
+/** 元数据 + 正文：详情页最终拿到的完整文章 */
+export type BlogPost = BlogPostMeta & BlogPostBody
 
 /** 标签 / 分类聚合项 */
 export interface TaxonomyItem {

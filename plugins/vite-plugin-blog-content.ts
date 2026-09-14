@@ -1,15 +1,21 @@
 /**
  * 构建期博客内容插件。
  *
- * 职责：把 `content/posts/*.md` 编译成虚拟模块 + 一个独立资源文件。
+ * 职责：把 `content/posts/*.md` 编译成虚拟模块 + 若干独立资源文件。
  * **运行时零 Markdown 解析、零语法高亮**：页面拿到的 `html` 已经渲染完毕。
  *
  * 产出：
- *   - `virtual:blog/posts`     —— 全部文章（元数据 + HTML + TOC）
- *   - `virtual:blog/taxonomy`  —— 标签 / 分类 / 归档聚合
- *   - `blog-search-index.json` —— 精简搜索索引（rollup asset，不进主包、不落 public/）
+ *   - `virtual:blog/posts`        —— 全部文章的**元数据**（不含正文）
+ *   - `virtual:blog/taxonomy`     —— 标签 / 分类 / 归档聚合
+ *   - `blog-search-index.json`    —— 精简搜索索引（rollup asset）
+ *   - `blog-posts/<slug>-<hash>.json` —— 每篇文章的正文 + TOC（rollup asset）
  *
  * 几个刻意的选择：
+ *   0. **元数据与正文分离**：正文 HTML 单篇动辄几十 kB，若和元数据同处一个模块，
+ *      首页光打开就得下载全站正文（50 篇会线性膨胀到几百 kB）。现在正文是
+ *      「一篇一个带内容 hash 的文件」，列表页零成本，详情页只取自己那一篇，
+ *      并且天然可配 `immutable` 长缓存。文件名的 hash 由我们自己对产物内容算，
+ *      这样 dev 与 build 的 URL 完全一致（dev 靠 middleware 用同一套 URL 伺候）。
  *   1. frontmatter 用 gray-matter（YAML 引擎是 js-yaml）。无时区的时间戳会被
  *      js-yaml 按 UTC 解析成 Date，所以格式化时一律取 **UTC** 分量 —— 这样
  *      `2026-09-14 10:00:00` 原样还原，不会因构建机时区不同而漂移一天。
@@ -19,6 +25,7 @@
  *   3. 语言按内容探测后动态加载，且必须在 `md.use()` 之前全部装好 ——
  *      @shikijs/markdown-it 在 setup 时就把已加载语言列表快照下来了。
  */
+import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -27,10 +34,12 @@ import MarkdownIt from 'markdown-it'
 import { fromHighlighter } from '@shikijs/markdown-it'
 import { createHighlighter } from 'shiki'
 
+import type { ServerResponse } from 'node:http'
 import type { Token } from 'markdown-it'
 import type { Plugin, ViteDevServer } from 'vite'
 
 import {
+  POST_BODY_DIR,
   SEARCH_INDEX_FILE,
   VIRTUAL_POSTS_MODULE,
   VIRTUAL_TAXONOMY_MODULE,
@@ -39,7 +48,8 @@ import { siteConfig } from '../src/config/site.ts'
 import type {
   ArchiveMonth,
   ArchiveYear,
-  BlogPost,
+  BlogPostBody,
+  BlogPostMeta,
   BlogPostPreview,
   BlogTaxonomy,
   SearchIndexEntry,
@@ -243,7 +253,7 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;')
 }
 
-function toPreview(post: BlogPost): BlogPostPreview {
+function toPreview(post: BlogPostPreview): BlogPostPreview {
   return {
     slug: post.slug,
     title: post.title,
@@ -263,8 +273,8 @@ function toPreview(post: BlogPost): BlogPostPreview {
 // 聚合
 // ---------------------------------------------------------------------------
 
-function buildTaxonomy(posts: BlogPost[]): BlogTaxonomy {
-  const collect = (keyOf: (post: BlogPost) => string[]): TaxonomyItem[] => {
+function buildTaxonomy(posts: BlogPostPreview[]): BlogTaxonomy {
+  const collect = (keyOf: (post: BlogPostPreview) => string[]): TaxonomyItem[] => {
     const buckets = new Map<string, BlogPostPreview[]>()
     for (const post of posts) {
       const preview = toPreview(post)
@@ -320,10 +330,28 @@ function buildTaxonomy(posts: BlogPost[]): BlogTaxonomy {
 // ---------------------------------------------------------------------------
 
 interface BuiltContent {
-  posts: BlogPost[]
+  /** 元数据（列表页消费），已按 置顶 → 时间 排好序 */
+  posts: BlogPostMeta[]
   taxonomy: BlogTaxonomy
   searchIndex: SearchIndexEntry[]
+  /** 每篇文章一个独立资源，build 时 emitFile，dev 时由 middleware 伺候 */
+  bodies: PostBodyAsset[]
 }
+
+/** 渲染完但还没拆分成「元数据 + 正文资源」的中间态 */
+interface RenderedPost extends BlogPostPreview {
+  toc: TocItem[]
+  html: string
+}
+
+/** 一篇正文资源：`fileName` 是相对站点根的路径（已含 hash），`source` 是 JSON 文本 */
+interface PostBodyAsset {
+  fileName: string
+  source: string
+}
+
+/** 正文资源的文件名 hash 长度。8 位十六进制（32bit）对本场景足够，且文件名不至于太长 */
+const BODY_HASH_LENGTH = 8
 
 type BlogHighlighter = Awaited<ReturnType<typeof createHighlighter>>
 type LoadableLanguage = Parameters<BlogHighlighter['loadLanguage']>[0]
@@ -371,7 +399,7 @@ function fenceLanguage(info: string): string {
   return info.trim().split(/\s+/)[0] ?? ''
 }
 
-async function buildContent(contentDir: string): Promise<BuiltContent> {
+async function buildContent(contentDir: string, base: string): Promise<BuiltContent> {
   const files = listMarkdownFiles(contentDir)
   const md = new MarkdownIt({ html: true, linkify: true })
 
@@ -457,7 +485,7 @@ async function buildContent(contentDir: string): Promise<BuiltContent> {
     }),
   )
 
-  const posts: BlogPost[] = pending.map((item) => {
+  const rendered: RenderedPost[] = pending.map((item) => {
     const html = md.renderer.render(item.tokens, md.options, item.env)
     const plainText = htmlToPlainText(html)
     const { wordCount, readingTime } = measureReading(plainText)
@@ -482,9 +510,25 @@ async function buildContent(contentDir: string): Promise<BuiltContent> {
   })
 
   // 置顶优先，其次时间倒序（`YYYY-MM-DD HH:mm:ss` 定长格式可直接字面量比较）
-  posts.sort((a, b) => b.sticky - a.sticky || b.date.localeCompare(a.date))
+  rendered.sort((a, b) => b.sticky - a.sticky || b.date.localeCompare(a.date))
 
-  const searchIndex: SearchIndexEntry[] = posts.map((post) => ({
+  // -------------------------------------------------------------------------
+  // 拆分：正文进独立资源（带内容 hash），元数据留在虚拟模块里
+  // -------------------------------------------------------------------------
+  const bodies: PostBodyAsset[] = []
+  const posts: BlogPostMeta[] = rendered.map((post) => {
+    const payload: BlogPostBody = { slug: post.slug, toc: post.toc, html: post.html }
+    const source = JSON.stringify(payload)
+    // 自己算 hash（而不是用 rollup 的 [hash]）：dev 与 build 的文件名才会一致，
+    // 否则 dev 下的 bodyUrl 只能另起一套规则，页面/缓存策略会分成两套
+    const hash = createHash('sha256').update(source).digest('hex').slice(0, BODY_HASH_LENGTH)
+    const fileName = `${POST_BODY_DIR}/${post.slug}-${hash}.json`
+    bodies.push({ fileName, source })
+
+    return { ...toPreview(post), bodyUrl: `${base}${fileName}` }
+  })
+
+  const searchIndex: SearchIndexEntry[] = rendered.map((post) => ({
     slug: post.slug,
     title: post.title,
     tags: post.tags,
@@ -492,7 +536,7 @@ async function buildContent(contentDir: string): Promise<BuiltContent> {
     text: htmlToPlainText(post.html).slice(0, SEARCH_TEXT_LIMIT),
   }))
 
-  return { posts, taxonomy: buildTaxonomy(posts), searchIndex }
+  return { posts, taxonomy: buildTaxonomy(rendered), searchIndex, bodies }
 }
 
 // ---------------------------------------------------------------------------
@@ -505,8 +549,17 @@ export function blogContent(options: BlogContentPluginOptions = {}): Plugin {
   let isBuild = false
   let cache: BuiltContent | null = null
 
+  /**
+   * 站点部署前缀（`import.meta.env.BASE_URL` 的构建期对应物），带尾斜杠。
+   *
+   * 正文资源的 URL 必须是**绝对路径**：fetch 一个相对路径会跟着当前路由漂移
+   * （详情页在 `/posts/xxx`，`blog-posts/a.json` 会解析成 `/posts/blog-posts/a.json`）。
+   * 相对 base（`./`）没有安全的绝对形式，直接退回 `/`。
+   */
+  let base = '/'
+
   const getContent = async (): Promise<BuiltContent> => {
-    if (!cache) cache = await buildContent(contentDir)
+    if (!cache) cache = await buildContent(contentDir, base)
     return cache
   }
 
@@ -528,23 +581,49 @@ export function blogContent(options: BlogContentPluginOptions = {}): Plugin {
     server.ws.send({ type: 'full-reload' })
   }
 
+  const sendJson = (res: ServerResponse, body: string): void => {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8')
+    res.setHeader('Cache-Control', 'no-cache')
+    res.end(body)
+  }
+
+  /** 请求路径 → 正文资源。中文 slug 在 URL 里是百分号编码，这里容错解码后再比 */
+  const matchBodyAsset = (pathname: string, bodies: PostBodyAsset[]): PostBodyAsset | undefined => {
+    let decoded = pathname
+    try {
+      decoded = decodeURIComponent(pathname)
+    } catch {
+      // 含裸 `%` 的畸形路径：保持原样比较，不要抛 URIError
+    }
+    return bodies.find((body) => decoded.endsWith(`/${body.fileName}`))
+  }
+
   return {
     name: 'blog:content',
 
     configResolved(config) {
       isBuild = config.command === 'build'
       contentDir = path.resolve(config.root, contentDirOption)
+      base = config.base.startsWith('/')
+        ? config.base.endsWith('/')
+          ? config.base
+          : `${config.base}/`
+        : '/'
     },
 
     async buildStart() {
       if (!isBuild) return
-      const { searchIndex } = await getContent()
-      // 独立资源文件：不进主包、不落 public/，运行时按需 fetch
+      const { searchIndex, bodies } = await getContent()
+      // 独立资源文件：不进 JS chunk、不落 public/，运行时按需 fetch
       this.emitFile({
         type: 'asset',
         fileName: SEARCH_INDEX_FILE,
         source: JSON.stringify(searchIndex),
       })
+      // 每篇正文一个文件，文件名带内容 hash → 可以放心配 immutable 长缓存
+      for (const body of bodies) {
+        this.emitFile({ type: 'asset', fileName: body.fileName, source: body.source })
+      }
     },
 
     resolveId(id) {
@@ -583,7 +662,10 @@ export function blogContent(options: BlogContentPluginOptions = {}): Plugin {
         )
     },
 
-    /** 开发期直接吐搜索索引，保证 dev 与 build 行为一致（都是 fetch 一个 URL） */
+    /**
+     * 开发期直接吐搜索索引与正文资源，保证 dev 与 build 行为一致
+     * （都是「按一个 URL fetch 一份 JSON」，URL 也完全一致 —— 因为 hash 是我们自己算的）。
+     */
     configureServer(server) {
       /*
        * Vite 8 只在 `type === 'update'` 时调用 handleHotUpdate —— 新建 / 删除文件
@@ -600,13 +682,21 @@ export function blogContent(options: BlogContentPluginOptions = {}): Plugin {
       server.middlewares.use((req, res, next) => {
         if (!req.url) return next()
         const pathname = req.url.split('?')[0] ?? ''
-        if (!pathname.endsWith(`/${SEARCH_INDEX_FILE}`)) return next()
 
+        if (pathname.endsWith(`/${SEARCH_INDEX_FILE}`)) {
+          getContent()
+            .then(({ searchIndex }) => sendJson(res, JSON.stringify(searchIndex)))
+            .catch(next)
+          return
+        }
+
+        // 正文资源：dev 下没有 emitFile 的产物，只能在这里按同一套 URL 伺候
+        if (!pathname.includes(`/${POST_BODY_DIR}/`)) return next()
         getContent()
-          .then(({ searchIndex }) => {
-            res.setHeader('Content-Type', 'application/json; charset=utf-8')
-            res.setHeader('Cache-Control', 'no-cache')
-            res.end(JSON.stringify(searchIndex))
+          .then(({ bodies }) => {
+            const asset = matchBodyAsset(pathname, bodies)
+            if (asset) sendJson(res, asset.source)
+            else next()
           })
           .catch(next)
       })

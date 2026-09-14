@@ -11,15 +11,27 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AnnouncementCard: typeof import('./../components/sidebar/AnnouncementCard.vue')['default']
     AppFooter: typeof import('./../components/layout/AppFooter.vue')['default']
     AppHeader: typeof import('./../components/layout/AppHeader.vue')['default']
     AppIcon: typeof import('./../components/common/AppIcon.vue')['default']
+    AuthorCard: typeof import('./../components/sidebar/AuthorCard.vue')['default']
     BackToTop: typeof import('./../components/common/BackToTop.vue')['default']
     ElBacktop: typeof import('element-plus/es')['ElBacktop']
     ElDrawer: typeof import('element-plus/es')['ElDrawer']
+    ElImage: typeof import('element-plus/es')['ElImage']
+    ElPagination: typeof import('element-plus/es')['ElPagination']
+    ElSkeleton: typeof import('element-plus/es')['ElSkeleton']
+    HomeBanner: typeof import('./../components/home/HomeBanner.vue')['default']
+    PostCard: typeof import('./../components/blog/PostCard.vue')['default']
     PostLinkList: typeof import('./../components/blog/PostLinkList.vue')['default']
+    PostPagination: typeof import('./../components/blog/PostPagination.vue')['default']
     ReadingProgress: typeof import('./../components/common/ReadingProgress.vue')['default']
+    RecentPostsCard: typeof import('./../components/sidebar/RecentPostsCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SidebarCard: typeof import('./../components/sidebar/SidebarCard.vue')['default']
+    TagCloud: typeof import('./../components/sidebar/TagCloud.vue')['default']
+    TypewriterText: typeof import('./../components/home/TypewriterText.vue')['default']
   }
 }

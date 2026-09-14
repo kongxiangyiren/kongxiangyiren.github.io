@@ -1,46 +1,79 @@
 <!--
   文章详情。
-  正文是构建期渲染好的 HTML，这里只负责摆位置。
-  TOC 滚动高亮、上下篇导航、评论位属于下一批，这一批给出朴素的锚点列表，
-  用来验证内容层输出的 TOC 结构确实可用（不靠运行时抓 DOM）。
+  元数据（标题 / 日期 / 标签 / TOC 之外的摘要信息）来自 `virtual:blog/posts`，
+  正文 HTML + TOC 是**独立资源**，进页面后才按需 fetch（`src/api/post.ts` 里带缓存）。
+
+  TOC 滚动高亮、上下篇导航、版权卡、图片放大属于批 2B；这一批只把异步加载链路
+  （含 el-skeleton 加载态与失败态）准备好。
 -->
 <script setup lang="ts">
-import { computed, watchEffect } from 'vue'
+import { computed, ref, watch, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import { posts } from 'virtual:blog/posts'
 
+import { loadPostBody } from '@/api/post'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { siteConfig } from '@/config/site'
+import type { BlogPostBody } from '@/types/blog'
 import { formatPostDate, toDateTimeAttr } from '@/utils/date'
 import { routeParam } from '@/utils/route'
 
 const route = useRoute()
 
 const slug = computed(() => routeParam(route.params.slug))
-const post = computed(() => posts.find((item) => item.slug === slug.value) ?? null)
+const meta = computed(() => posts.find((item) => item.slug === slug.value) ?? null)
+
+const body = ref<BlogPostBody | null>(null)
+const loading = ref(false)
+const failed = ref(false)
+
+watch(
+  slug,
+  async (value) => {
+    body.value = null
+    failed.value = false
+
+    if (!value || !posts.some((item) => item.slug === value)) {
+      loading.value = false
+      return
+    }
+
+    loading.value = true
+    try {
+      const loaded = await loadPostBody(value)
+      // 快速连点两篇文章时，别让先到的响应覆盖后到的
+      if (slug.value === value) body.value = loaded
+    } catch {
+      if (slug.value === value) failed.value = true
+    } finally {
+      if (slug.value === value) loading.value = false
+    }
+  },
+  { immediate: true },
+)
 
 watchEffect(() => {
   // 让浏览器标签页显示文章名；离开时由 router.afterEach 复位
-  if (post.value) document.title = `${post.value.title} - ${siteConfig.title}`
+  if (meta.value) document.title = `${meta.value.title} - ${siteConfig.title}`
 })
 </script>
 
 <template>
-  <article v-if="post" class="flex flex-col gap-6">
+  <article v-if="meta" class="flex flex-col gap-6">
     <header class="flex flex-col gap-3">
-      <h1 class="text-2xl font-semibold text-font">{{ post.title }}</h1>
+      <h1 class="text-2xl font-semibold text-font">{{ meta.title }}</h1>
 
       <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-font opacity-80">
-        <time :datetime="toDateTimeAttr(post.date)">
-          发表于 {{ formatPostDate(post.date, true) }}
+        <time :datetime="toDateTimeAttr(meta.date)">
+          发表于 {{ formatPostDate(meta.date, true) }}
         </time>
-        <span v-if="post.updated">更新于 {{ formatPostDate(post.updated, true) }}</span>
-        <span>{{ post.wordCount }} 字 · 约 {{ post.readingTime }} 分钟</span>
+        <span v-if="meta.updated">更新于 {{ formatPostDate(meta.updated, true) }}</span>
+        <span>{{ meta.wordCount }} 字 · 约 {{ meta.readingTime }} 分钟</span>
       </div>
 
       <div class="flex flex-wrap gap-2 text-xs">
         <RouterLink
-          v-for="category in post.categories"
+          v-for="category in meta.categories"
           :key="category"
           :to="`/categories/${category}`"
           class="rounded border border-border px-1.5 py-0.5 text-font transition-colors hover:text-primary"
@@ -48,7 +81,7 @@ watchEffect(() => {
           {{ category }}
         </RouterLink>
         <RouterLink
-          v-for="tag in post.tags"
+          v-for="tag in meta.tags"
           :key="tag"
           :to="`/tags/${tag}`"
           class="rounded border border-border px-1.5 py-0.5 text-primary transition-colors hover:bg-card-hover"
@@ -58,26 +91,43 @@ watchEffect(() => {
       </div>
     </header>
 
-    <nav v-if="post.toc.length > 0" class="rounded-lg border border-border bg-card p-4">
-      <p class="mb-2 text-sm font-medium text-font">目录</p>
-      <ul class="flex flex-col gap-1 text-sm">
-        <li
-          v-for="item in post.toc"
-          :key="item.id"
-          :style="{ paddingLeft: `${(item.level - 2) * 12}px` }"
-        >
-          <a :href="`#${item.id}`" class="text-font transition-colors hover:text-primary">
-            {{ item.text }}
-          </a>
-        </li>
-      </ul>
-    </nav>
+    <!-- 加载态：正文是独立资源，网络慢时用骨架屏兜住高度 -->
+    <div v-if="loading" class="flex flex-col gap-5" aria-busy="true" aria-live="polite">
+      <span class="sr-only">正在加载正文…</span>
+      <el-skeleton :rows="8" animated />
+      <el-skeleton :rows="6" animated />
+    </div>
 
-    <!--
-      构建期产物，来源是本仓库 content/ 下的 Markdown（单作者可信内容），
-      运行时不接受任何用户输入，所以 v-html 是安全的。
-    -->
-    <div class="markdown-body" v-html="post.html"></div>
+    <div
+      v-else-if="failed"
+      class="flex flex-col items-start gap-3 rounded-lg border border-border bg-card p-6 text-sm text-font"
+    >
+      <p>正文加载失败了，可能是网络问题。</p>
+      <RouterLink to="/" class="text-primary hover:underline">回到首页</RouterLink>
+    </div>
+
+    <template v-else-if="body">
+      <nav v-if="body.toc.length > 0" class="rounded-lg border border-border bg-card p-4">
+        <p class="mb-2 text-sm font-medium text-font">目录</p>
+        <ul class="flex flex-col gap-1 text-sm">
+          <li
+            v-for="item in body.toc"
+            :key="item.id"
+            :style="{ paddingLeft: `${(item.level - 2) * 12}px` }"
+          >
+            <a :href="`#${item.id}`" class="text-font transition-colors hover:text-primary">
+              {{ item.text }}
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!--
+        构建期产物，来源是本仓库 content/ 下的 Markdown（单作者可信内容），
+        运行时不接受任何用户输入，所以 v-html 是安全的。
+      -->
+      <div class="markdown-body" v-html="body.html"></div>
+    </template>
 
     <footer class="border-t border-border pt-4">
       <RouterLink

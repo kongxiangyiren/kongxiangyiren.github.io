@@ -52,6 +52,39 @@ const props = defineProps<{ name: IconName }>()
       <path d="m5 12 7-7 7 7" />
     </g>
 
+    <g v-else-if="props.name === 'arrow-down'">
+      <path d="M12 5v14" />
+      <path d="m19 12-7 7-7-7" />
+    </g>
+
+    <g v-else-if="props.name === 'calendar'">
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M8 3v4" />
+      <path d="M16 3v4" />
+      <path d="M3 11h18" />
+    </g>
+
+    <g v-else-if="props.name === 'clock'">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </g>
+
+    <g v-else-if="props.name === 'folder'">
+      <path d="M4 6a2 2 0 0 1 2-2h3.5l2 2H18a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+    </g>
+
+    <g v-else-if="props.name === 'tag'">
+      <path
+        d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4Z"
+      />
+      <circle cx="7.5" cy="7.5" r="0.6" fill="currentColor" />
+    </g>
+
+    <g v-else-if="props.name === 'bell'">
+      <path d="M18 8a6 6 0 1 0-12 0c0 6-2 7-2 7h16s-2-1-2-7" />
+      <path d="M10.3 20a2 2 0 0 0 3.4 0" />
+    </g>
+
     <g v-else-if="props.name === 'mail'">
       <rect x="2" y="4" width="20" height="16" rx="2" />
       <path d="m2 7 10 6 10-6" />

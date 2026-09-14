@@ -29,12 +29,20 @@ export interface SiteAuthor {
 
 export interface SiteConfig {
   title: string
-  /** 首屏打字机用的副标题 */
+  /** 首屏打字机用的副标题（可含多个句号分隔的短句，会循环播放） */
   subtitle: string
   description: string
   author: SiteAuthor
   nav: NavLink[]
   socials: SocialLink[]
+  /** 首页侧边栏公告卡内容。留空字符串则整张卡不渲染 */
+  announcement: string
+  /**
+   * 首页每页文章数。
+   * 注意：本站目前只有 3 篇文章，这里刻意设成 2 以便分页在开发期可见可测；
+   * 文章多起来之后改成 10 更接近 Butterfly 默认观感。
+   */
+  postsPerPage: number
   /** 页脚「已运行 X 天 Y 时 Z 分 S 秒」的起算日（YYYY-MM-DD） */
   footerStartDate: string
   /** 备案号。境外服务器无备案 → 留空，页脚整行不渲染 */
@@ -43,7 +51,7 @@ export interface SiteConfig {
 
 export const siteConfig: SiteConfig = {
   title: '空巷一人',
-  subtitle: '记录技术与生活的零散想法',
+  subtitle: '记录技术与生活的零散想法。写代码，也写字。',
   description: '前端开发笔记、工程杂谈与零散记录。',
   author: {
     name: '空巷一人',
@@ -63,6 +71,9 @@ export const siteConfig: SiteConfig = {
     { icon: 'mail', label: 'Email', href: 'mailto:1530688385@qq.com' },
     { icon: 'rss', label: 'RSS', href: '/rss.xml' },
   ],
+  announcement:
+    '这个博客刚重新起步，文章会一篇篇补上。这里主要写前端工程、构建工具与偶尔的生活记录。',
+  postsPerPage: 2,
   footerStartDate: '2026-01-01',
   icp: '',
 }

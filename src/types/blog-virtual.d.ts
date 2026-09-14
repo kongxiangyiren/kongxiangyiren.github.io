@@ -5,10 +5,13 @@
  * 运行时不落盘，所以需要在这里补环境声明，否则 `pnpm type-check` 会报找不到模块。
  */
 declare module 'virtual:blog/posts' {
-  import type { BlogPost } from '@/types/blog'
+  import type { BlogPostMeta } from '@/types/blog'
 
-  /** 已排序：置顶权重降序，其次时间倒序 */
-  export const posts: BlogPost[]
+  /**
+   * 已排序：置顶权重降序，其次时间倒序。
+   * 只有元数据（含 bodyUrl）—— 正文在独立的 `blog-posts/*.json` 资源里。
+   */
+  export const posts: BlogPostMeta[]
 }
 
 declare module 'virtual:blog/taxonomy' {

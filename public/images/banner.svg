@@ -1,0 +1,51 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="1600"
+  height="900"
+  viewBox="0 0 1600 900"
+  preserveAspectRatio="xMidYMid slice"
+  role="img"
+  aria-label="首屏背景"
+>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1b2b" />
+      <stop offset="0.45" stop-color="#12324b" />
+      <stop offset="1" stop-color="#1d4b63" />
+    </linearGradient>
+    <radialGradient id="glow-a" cx="0.22" cy="0.28" r="0.62">
+      <stop offset="0" stop-color="#49b1f5" stop-opacity="0.55" />
+      <stop offset="1" stop-color="#49b1f5" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glow-b" cx="0.82" cy="0.78" r="0.55">
+      <stop offset="0" stop-color="#7f5af0" stop-opacity="0.45" />
+      <stop offset="1" stop-color="#7f5af0" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="streak" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0" />
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.16" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)" />
+  <rect width="1600" height="900" fill="url(#glow-a)" />
+  <rect width="1600" height="900" fill="url(#glow-b)" />
+
+  <!-- 斜向细线：给纯渐变一点纹理，避免大面积死板 -->
+  <g stroke="#ffffff" stroke-opacity="0.06" stroke-width="1.5">
+    <path d="M-100 820 900 -60" />
+    <path d="M60 900 1060 20" />
+    <path d="M240 920 1240 40" />
+    <path d="M1420 940 1620 760" />
+  </g>
+
+  <!-- 柔和光斑 -->
+  <g fill="#ffffff">
+    <circle cx="1180" cy="220" r="140" fill-opacity="0.05" />
+    <circle cx="1320" cy="330" r="72" fill-opacity="0.05" />
+    <circle cx="300" cy="700" r="180" fill-opacity="0.04" />
+  </g>
+
+  <rect y="430" width="1600" height="120" fill="url(#streak)" />
+</svg>
