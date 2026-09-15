@@ -1,0 +1,72 @@
+# 部署到 GitHub Pages
+#
+# 目标站点：https://kongxiangyiren.github.io/
+# 仓库形态：用户主页仓库（仓库名必须正好是 `kongxiangyiren.github.io`），
+#          因此站点挂在**域名根**下 → `base` 保持默认 `/`，无需配置。
+#          （若将来改成项目页 `<user>.github.io/<repo>/`，则必须同步改 vite 的 `base`
+#            与所有绝对路径，否则全站资源 404。）
+#
+# 为什么用 Actions 而不是把产物提交到 gh-pages 分支：
+#   1. 构建产物不进 git 历史（.output 每次约 1 MB，很快会把仓库撑大）
+#   2. CI 在 Linux 上做全新 install —— 顺带**绕开本地 Windows 的 sass-embedded
+#      原生二进制损坏**问题（那是 win32 包的问题，Linux 包不受影响）
+#   3. Pages 的官方推荐方式，回滚 = 重跑上一个成功的 run（一键、幂等）
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # 允许在 Actions 页面手动触发：改完仓库的 Pages 设置后不必空提交一次
+  workflow_dispatch:
+
+# Pages 部署所需的最小权限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时刻只跑一个部署。**不取消进行中的**：把已开始的发布打断，可能留下半成品。
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 刻意不写 version：从 package.json 的 `packageManager: pnpm@12.4.1` 读取，
+      # 保证 CI 与本地用同一个包管理器版本
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # --frozen-lockfile：锁文件与 package.json 不一致时**直接失败**，
+      # 不允许 CI 悄悄改动依赖（本地与线上的依赖必须逐字一致）
+      - run: pnpm install --frozen-lockfile
+
+      # `pnpm build` = build:compile（type-check + vite build）+ verify:build（产物门禁）。
+      # 门禁会校验 22 个 HTML 产物 + rss/sitemap/robots；**不通过则整个 job 失败**，
+      # 坏产物不会上线。这是本项目部署前唯一的安全网，别去掉。
+      - run: pnpm build
+
+      - uses: actions/configure-pages@v5
+
+      # nitro 的 static preset 输出在 `.output/public`（不是 Vite 默认的 dist）
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .output/public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -125,8 +125,8 @@ export interface SiteConfig {
 }
 
 export const siteConfig: SiteConfig = {
-  // ⚠️ 示例域名，上线前必须改成真实域名（见接口上的说明）
-  url: 'https://blog.example.com',
+  // GitHub Pages 用户主页仓库（仓库名必须是 kongxiangyiren.github.io），站点挂在域名根，故无子路径
+  url: 'https://kongxiangyiren.github.io',
   title: '空巷一人',
   subtitle: '记录技术与生活的零散想法。写代码，也写字。',
   description: '前端开发笔记、工程杂谈与零散记录。',
