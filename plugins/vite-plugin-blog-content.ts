@@ -9,6 +9,8 @@
  *   - `virtual:blog/taxonomy`     —— 标签 / 分类 / 归档聚合
  *   - `blog-search-index.json`    —— 精简搜索索引（rollup asset）
  *   - `blog-posts/<slug>-<hash>.json` —— 每篇文章的正文 + TOC（rollup asset）
+ *   - `rss.xml` / `sitemap.xml` / `robots.txt` —— 站点级元文件（rollup asset）
+ *     生成逻辑在 `plugins/blog-site-files.ts`（纯函数），build 与 dev 共用同一份。
  *
  * 几个刻意的选择：
  *   0. **元数据与正文分离**：正文 HTML 单篇动辄几十 kB，若和元数据同处一个模块，
@@ -40,11 +42,15 @@ import type { Plugin, ViteDevServer } from 'vite';
 
 import {
   POST_BODY_DIR,
+  ROBOTS_FILE,
+  RSS_FILE,
   SEARCH_INDEX_FILE,
+  SITEMAP_FILE,
   VIRTUAL_POST_BODIES_MODULE,
   VIRTUAL_POSTS_MODULE,
   VIRTUAL_TAXONOMY_MODULE
 } from '../src/constants/blog.ts';
+import { buildSiteFiles } from './blog-site-files.ts';
 import type {
   ArchiveMonth,
   ArchiveYear,
@@ -605,10 +611,22 @@ export function blogContent(options: BlogContentPluginOptions = {}): Plugin {
     server.ws.send({ type: 'full-reload' });
   };
 
-  const sendJson = (res: ServerResponse, body: string): void => {
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  const sendSource = (res: ServerResponse, contentType: string, body: string): void => {
+    res.setHeader('Content-Type', contentType);
     res.setHeader('Cache-Control', 'no-cache');
     res.end(body);
+  };
+
+  const sendJson = (res: ServerResponse, body: string): void => {
+    sendSource(res, 'application/json; charset=utf-8', body);
+  };
+
+  /** 站点级元文件的 URL → 文件名；不是这三个之一时返回 null */
+  const matchSiteFileName = (pathname: string): string | null => {
+    for (const name of [RSS_FILE, SITEMAP_FILE, ROBOTS_FILE]) {
+      if (pathname.endsWith(`/${name}`)) return name;
+    }
+    return null;
   };
 
   /** 请求路径 → 正文资源。中文 slug 在 URL 里是百分号编码，这里容错解码后再比 */
@@ -637,7 +655,7 @@ export function blogContent(options: BlogContentPluginOptions = {}): Plugin {
 
     async buildStart() {
       if (!isBuild) return;
-      const { searchIndex, bodies } = await getContent();
+      const { posts, taxonomy, searchIndex, bodies } = await getContent();
       // 独立资源文件：不进 JS chunk、不落 public/，运行时按需 fetch
       this.emitFile({
         type: 'asset',
@@ -647,6 +665,16 @@ export function blogContent(options: BlogContentPluginOptions = {}): Plugin {
       // 每篇正文一个文件，文件名带内容 hash → 可以放心配 immutable 长缓存
       for (const body of bodies) {
         this.emitFile({ type: 'asset', fileName: body.fileName, source: body.source });
+      }
+      // 站点级元文件：同样是独立静态资源，**不进客户端 JS bundle**
+      for (const file of buildSiteFiles({
+        base,
+        // 与预渲染共用同一份路由清单：两份清单漂移会产生「预渲染了但 sitemap 漏了」
+        routes: buildPrerenderRoutes(posts, taxonomy),
+        posts,
+        builtAt: new Date()
+      })) {
+        this.emitFile({ type: 'asset', fileName: file.fileName, source: file.source });
       }
     },
 
@@ -706,8 +734,11 @@ export function blogContent(options: BlogContentPluginOptions = {}): Plugin {
     },
 
     /**
-     * 开发期直接吐搜索索引与正文资源，保证 dev 与 build 行为一致
-     * （都是「按一个 URL fetch 一份 JSON」，URL 也完全一致 —— 因为 hash 是我们自己算的）。
+     * 开发期直接吐搜索索引、正文资源与站点级元文件，保证 dev 与 build 行为一致
+     * （都是「按一个 URL fetch 一份 JSON/XML」，URL 也完全一致 —— 因为 hash 是我们自己算的）。
+     *
+     * 站点级元文件在 dev 下尤其重要：页脚 / 关于页都有指向 `/rss.xml` 的链接，
+     * 如果只在 build 产出，dev 下点它就是一个 404（正是本批要修的那个死链）。
      */
     configureServer(server) {
       /*
@@ -725,6 +756,24 @@ export function blogContent(options: BlogContentPluginOptions = {}): Plugin {
       server.middlewares.use((req, res, next) => {
         if (!req.url) return next();
         const pathname = req.url.split('?')[0] ?? '';
+
+        // 站点级元文件（rss.xml / sitemap.xml / robots.txt）：内容由同一份纯函数生成
+        const siteFileName = matchSiteFileName(pathname);
+        if (siteFileName) {
+          getContent()
+            .then(({ posts, taxonomy }) => {
+              const file = buildSiteFiles({
+                base,
+                routes: buildPrerenderRoutes(posts, taxonomy),
+                posts,
+                builtAt: new Date()
+              }).find(item => item.fileName === siteFileName);
+              if (file) sendSource(res, file.contentType, file.source);
+              else next();
+            })
+            .catch(next);
+          return;
+        }
 
         if (pathname.endsWith(`/${SEARCH_INDEX_FILE}`)) {
           getContent()

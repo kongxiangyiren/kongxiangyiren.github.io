@@ -7,7 +7,7 @@
  * 视觉本来就不该一样（也就是不硬耦合）。
  */
 import type { TaxonomyItem } from '@/types/blog';
-import { safeDecode } from '@/utils/route';
+import { safeDecode } from '@/utils/absolute-url';
 
 /**
  * 把一串「文章数」归一化成 `[0, 1]` 的权重（纯函数）。
