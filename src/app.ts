@@ -12,7 +12,6 @@
  * 样式在此统一引入：客户端的 CSS 由这里进图，服务端的 CSS 也从这里进 SSR 模块图 ——
  * nitro 在 dev 下靠 SSR 图收集 CSS 链接（`?assets=ssr`），样式只有一处声明才不会漏。
  */
-import { createPinia } from 'pinia';
 import { createSSRApp } from 'vue';
 
 import App from './App.vue';
@@ -40,7 +39,9 @@ export function createBlogApp(options: CreateBlogAppOptions = {}) {
   const app = createSSRApp(App);
   const router = createBlogRouter(options.history);
 
-  app.use(createPinia());
+  // 刻意不装 Pinia：全站没有任何跨组件共享状态（主题走 localStorage + composable、
+  // 搜索/分页状态都在各自组件或 URL 里）。注册空 Pinia 会往客户端包塞约 2.9 kB 死重量。
+  // 将来真需要全局状态时，在这里加回 `app.use(createPinia())` 即可（依赖已声明）。
   app.use(router);
   if (options.head) app.use(options.head);
 

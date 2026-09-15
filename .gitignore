@@ -9,8 +9,6 @@ lerna-debug.log*
 
 node_modules
 .DS_Store
-dist
-dist-ssr
 # nitro 产物（vite build 现在输出到 .output，含 public/ 与 server/）
 .output
 .nitro
