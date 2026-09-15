@@ -231,21 +231,73 @@ function measureReading(plainText: string): { wordCount: number; readingTime: nu
 }
 
 /**
+ * 「不插空格」判定用的 CJK 码点范围，用于 `stripCjkWordSpaces`。
+ *
+ *   · `\u3000-\u303f` CJK 符号和标点 —— 、。〈〉《》「」『』（含 `\u3000` 全角空格）
+ *   · `\u4e00-\u9fff` CJK 统一表意文字 —— 汉字主体
+ *   · `\uff00-\uffef` 半角及全角形式 —— ，．？！：；（）等全角标点
+ *
+ * 为什么是这三段：
+ *   - 这三段覆盖了中文技术文章里**实际会出现**的全部「无空格书写」字符；
+ *     实测本仓 nginx 篇的 5 处假空格分别是 `，`+空+`每`、`。`+空+`最`、`置`+空+`先`、
+ *     `退`+空+`前`、`式`+空+`（` —— 全落在三段之内。
+ *   - **刻意不含谚文 `\uac00-\ud7af`**：韩语用空格分词，`한국어 단어` 里的空格是**语义**的，
+ *     按本规则删掉就是真 bug。宁可漏过，不可删错。
+ *   - **刻意不含假名 `\u3040-\u30ff`**：本站是中文博客，正文不出现日文；
+ *     真要用日文时再加（日文确实不用空格，届时加上是安全的）。
+ *   - `\uff00-\uffef` 整段包含全角拉丁字母 / 数字（`Ａ`、`１`），理论上
+ *     「ＡＢ ＣＤ」这种极罕见写法里的空格会被一起删掉 —— 已接受：
+ *     全角形式本身就是中文排版语境的产物，这里不插空格反而是对的。
+ */
+const CJK_RANGE = '[\\u3000-\\u303f\\u4e00-\\u9fff\\uff00-\\uffef]';
+
+/**
+ * 前后**两侧都是 CJK** 的那个 ASCII 空格。用零宽断言（lookbehind + lookahead）而不是
+ * `(CJK) (CJK)` 捕获组：捕获组会把两侧字符一起吃掉，`甲 乙 丙` 只能删掉第一个空格。
+ * 本模块只在 Node（构建期）执行，lookbehind 无兼容性顾虑。
+ */
+const CJK_WORD_SPACE_RE = new RegExp(`(?<=${CJK_RANGE}) (?=${CJK_RANGE})`, 'g');
+
+/**
+ * 去掉「CJK 与 CJK 之间」的那个空格。
+ *
+ * ## 为什么必须去（真实缺陷，2026-09-15 CTO 用码点确认）
+ * `htmlToPlainText` 会把**所有**空白（markdown 软换行产生的 `\n`、块级标签之间的
+ * 空白）折叠成单个 ASCII 空格。这对拉丁文是对的 —— `foo\nbar` 本来就该是 `foo bar`；
+ * 但对中文是错的：markdown 里正常换行书写的中文，产物里会变成
+ * `…我用了很久， 每一段…`、`…最小可用配置 先看骨架…`。
+ * 实测该字符串**同时进了全站 `<meta name="description">`**（不只是 RSS），是真 SEO 影响。
+ *
+ * ## 为什么是「两侧都是 CJK」而不是「只要有一侧是 CJK」
+ * `Nginx 配置`、`hash 模式` 里的空格是**有意**的（中西文之间的排版间隔），必须保留。
+ * 只有两侧都在 CJK 范围内时空格才是折叠产物，删掉不会损失任何语义。
+ *
+ * ## 已知取舍
+ * 段内**手写**的「汉字 空格 汉字」（如 `第一 第二` 作并列）也会被删掉 ——
+ * 折叠之后无法与软换行产生的空格区分。这种情况在中文里罕见，且 CTO 已裁定本规则为准。
+ */
+function stripCjkWordSpaces(text: string): string {
+  return text.replace(CJK_WORD_SPACE_RE, '');
+}
+
+/**
  * 渲染后的 HTML → 纯文本。
  * 整段代码块直接丢弃（对摘要和搜索都是噪音），行内 code 只去标签保留内容。
  */
 function htmlToPlainText(html: string): string {
-  return html
-    .replace(/<pre[\s\S]*?<\/pre>/g, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, '&')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return stripCjkWordSpaces(
+    html
+      .replace(/<pre[\s\S]*?<\/pre>/g, ' ')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
 }
 
 /** 序列化成可安全内联进 JS 模块的字面量（顺便挡掉 `</script>` 这类序列） */

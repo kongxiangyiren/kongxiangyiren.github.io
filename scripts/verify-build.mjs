@@ -17,7 +17,12 @@
  * ## 校验项
  *   1. 标签配对：`<script` / `</script>`（事故直接指标）、`<style>`、`<div>`、`<title>` 等
  *      —— 每个非 void、且结束标签不可省略的元素，开合数量必须相等
+ *      ⚠️ 计数在**摘掉属性值之后**的标记上做：unhead 渲染 `content="..."` 时不转义 `<`，
+ *         文章标题里的 `<pre>` / `<code>` 会被朴素计数当成真标签 → 误报 → 阻断发布
+ *      ⚠️ 但**正文里的裸** `<script>` / `<pre>` 仍必须命中（那正是 P0 的检测面）
  *   2. 无自闭合 `<script ... />`（HTML 解析器忽略该斜杠，与不闭合等价致命）
+ *   2b. **属性引号配对**：每个标签内的 `"` / `'` 必须两两配对（扫描器还会直接报
+ *      「引号未闭合到文档末尾」）—— 补上「摘属性值会掩盖引号未闭合」的假阴性
  *   3. 恰好 1 个 `<title>`，且内容非空
  *   4. `<body>` 存在且非空壳（`#app` 内有实际内容）
  *   5. `<div id="app">` 存在，且其内容长度 > 0、去标签后有实际文本
@@ -95,6 +100,182 @@ function countClose(html, tag, flags = 'gi') {
   return countMatches(html, `</${tag}\\s*>`, flags);
 }
 
+/** 统计某个字符在字符串里的出现次数（用于引号配对） */
+function countChar(str, char) {
+  let count = 0;
+  for (let i = 0; i < str.length; i += 1) {
+    if (str[i] === char) count += 1;
+  }
+  return count;
+}
+
+/**
+ * HTML 的 **raw-text / escapable-raw-text** 元素。
+ *
+ * 这些元素的内容按纯文本处理：`<script>` 里的 `if (a < b)`、`<style>` 里的 `a > b`
+ * 都不是标记。扫描时遇到它们要一路跳到配对的那个结束标签，否则会把脚本 / 样式文本里的
+ * `<` 误当成标签起点，连带把后续真实标签的配对关系算错。
+ */
+const RAW_TEXT_ELEMENTS = new Set(['script', 'style', 'textarea', 'title']);
+
+/**
+ * 扫描文档里**真正的标签**。
+ *
+ * ## 为什么不能用「直接数字符串里的 `<pre`」
+ * 2026-09-15 实测：unhead 渲染 `content="..."` 时**只转义 `"`，不转义 `<`**
+ * （HTML 规范允许带引号的属性值里出现裸 `<`，浏览器与爬虫都正常处理）。于是文章标题里
+ * 写 `<pre>` / `<code>` 时，产物里会出现：
+ *
+ *     <meta property="og:title" content="测试 <pre> 与 <code> 标签">
+ *
+ * 直接数字符串会把这 2 个 `<pre>` / 2 个 `<code>` 当成真标签 → **配对计数误报、构建被拦下**。
+ * 而技术博客的文章名里出现 `<pre>` 是很正常的事 —— 一个会误报的门禁很快就会被关掉。
+ *
+ * ## 为什么也不能用「无条件把 `="..."` 整段删掉」这种朴素做法
+ * 属性值的引号可以**不闭合**（模板拼接出错时就是这样）。无条件删除会把「未闭合引号之后的
+ * 整份文档」一起吃掉 → **真正的未闭合 `<script>` 反而漏检**（假阴性，比误报更危险）。
+ * 所以这里按标签的真实语法逐字符扫描：只有**确实闭合**的引号区才被当成属性值跳过；
+ * 引号没闭合 / 标签没有 `>` 结束，都在扫描期直接报错。
+ *
+ * 返回 `{ tags, issues }`：
+ *   - `tags`：真实标签数组（`start` / `end` 是文档下标，`raw` 是标签原文）
+ *   - `issues`：扫描期发现的硬错误（格式与其它校验一致）
+ */
+function scanTags(html) {
+  const tags = [];
+  const issues = [];
+  const fail = (item, expected, actual) => issues.push({ item, expected, actual });
+  const lowerHtml = html.toLowerCase();
+
+  let i = 0;
+  while (i < html.length) {
+    const lt = html.indexOf('<', i);
+    if (lt === -1) break;
+    i = lt;
+
+    // 注释 / doctype / 处理指令：不是元素，整段跳过
+    if (html.startsWith('<!--', lt)) {
+      const end = html.indexOf('-->', lt + 4);
+      i = end === -1 ? html.length : end + 3;
+      continue;
+    }
+    if (html.startsWith('<!', lt) || html.startsWith('<?', lt)) {
+      const end = html.indexOf('>', lt + 2);
+      i = end === -1 ? html.length : end + 1;
+      continue;
+    }
+
+    const closing = html[lt + 1] === '/';
+    const nameStart = lt + (closing ? 2 : 1);
+    const nameMatch = /^[A-Za-z][^\s/>]*/.exec(html.slice(nameStart, nameStart + 64));
+    if (!nameMatch) {
+      // 文本里未转义的裸 `<`：不是标签起点，跳过这个字符
+      i = lt + 1;
+      continue;
+    }
+
+    const name = nameMatch[0].toLowerCase();
+    let cursor = nameStart + nameMatch[0].length;
+    let quote = null;
+    let quoteAt = -1;
+    let selfClosing = false;
+    let terminated = false;
+
+    // 逐字符走完这个标签：在引号里时无条件跳过（属性值里的 `<` / `>` 都不是标记）
+    while (cursor < html.length) {
+      const ch = html[cursor];
+      if (quote) {
+        if (ch === quote) quote = null;
+      } else if (ch === '"' || ch === "'") {
+        quote = ch;
+        quoteAt = cursor;
+      } else if (ch === '>') {
+        selfClosing = html[cursor - 1] === '/';
+        cursor += 1;
+        terminated = true;
+        break;
+      }
+      cursor += 1;
+    }
+
+    if (!terminated) {
+      if (quote) {
+        fail(
+          '属性引号配对',
+          '属性值的引号必须两两配对（未闭合的引号会把其后整段标记吃掉）',
+          `<${name}> 从第 ${quoteAt} 个字符起的 ${quote} 引号在文档结束前没有闭合`
+        );
+      } else {
+        fail(
+          '标签未闭合（缺 `>`）',
+          '每个标签都以 `>` 结束',
+          `<${name}> 从第 ${lt} 个字符起没有找到结束的 ` > ``
+        );
+      }
+    }
+
+    const end = terminated ? cursor : html.length;
+    tags.push({ start: lt, end, raw: html.slice(lt, end), name, closing, selfClosing });
+
+    // raw-text 元素：内容里不解析标签 → 直接跳到配对的结束标签（让下一轮把它当闭标签收下）
+    if (terminated && !closing && !selfClosing && RAW_TEXT_ELEMENTS.has(name)) {
+      const closeIdx = lowerHtml.indexOf(`</${name}`, cursor);
+      i = closeIdx === -1 ? html.length : closeIdx;
+    } else {
+      i = end;
+    }
+  }
+
+  return { tags, issues };
+}
+
+/**
+ * 摘掉每个真标签里**被引号包住的属性值**（`="..."` / `='...'`），其余字节原样保留。
+ *
+ * 之后所有「结构计数」都在这份文本上做：`content="测试 <pre> 与 <code> 标签"` 里的
+ * `<pre>` / `<code>` 就不会再被数成标签。标签之外的内容一个字节都不动 ——
+ * 正文里的**裸** `<script>` / `<pre>` 仍然会被计数命中（那正是 P0 的检测面）。
+ */
+function stripAttributeValues(html, tags) {
+  let out = '';
+  let cursor = 0;
+  for (const tag of tags) {
+    out += html.slice(cursor, tag.start);
+    out += tag.raw.replace(/"[^"]*"|'[^']*'/g, quote => quote[0] + quote[quote.length - 1]);
+    cursor = tag.end;
+  }
+  return out + html.slice(cursor);
+}
+
+/**
+ * 属性引号配对（第二道）。
+ *
+ * 扫描器只在「引号一直没闭合到文档末尾」时报错；这里再逐个标签数一遍引号，
+ * 兜住「引号数为奇数、却恰好被后文另一个引号凑成对」的形态。
+ *
+ * ⚠️ **刻意只数标签内部的引号，不数整份文档**（CTO 的原始表述是「双引号总数」）。
+ * 文档级的计数会误报：`/` 与 `'` 在**正文文本**里是合法字符，而 markdown-it 只转义
+ * `& < > "`，**不转义 `'`** —— 正文里写一句 `don't` 就会让单引号总数变成奇数。
+ * 本仓产物还常驻 18 个单引号（`index.html` 里防 FOUC 的内联脚本：`'blog-theme'` 等），
+ * 它们同样在标签之外。只数**属性区**既符合「属性引号配对」的原意，也不会误报。
+ */
+function verifyAttributeQuotes(tags) {
+  const issues = [];
+  for (const tag of tags) {
+    for (const quote of ['"', "'"]) {
+      const count = countChar(tag.raw, quote);
+      if (count % 2 !== 0) {
+        issues.push({
+          item: '属性引号配对',
+          expected: `每个标签内部的 ${quote} 引号两两配对`,
+          actual: `<${tag.name}> 里有 ${count} 个 ${quote}（奇数）`
+        });
+      }
+    }
+  }
+  return issues;
+}
+
 /** 去标签 / 去注释 / 解实体后的可见文本长度 */
 function visibleTextLength(html) {
   const text = html
@@ -164,10 +345,18 @@ function verifyHtml(html) {
   const issues = [];
   const fail = (item, expected, actual) => issues.push({ item, expected, actual });
 
+  // 0. 先扫出真标签，并据此得到「摘掉属性值」的标记文本。
+  //    下面所有**结构计数**都在 `markup` 上做 —— 只看真正的标签区，属性值里的
+  //    `<pre>` / `<code>` 这类文本不再参与计数。扫描期发现的硬错误（属性引号未闭合 /
+  //    标签缺 `>`）直接并入 issues。
+  const { tags, issues: scanIssues } = scanTags(html);
+  issues.push(...scanIssues, ...verifyAttributeQuotes(tags));
+  const markup = stripAttributeValues(html, tags);
+
   // 1. 标签配对
   for (const tag of PAIRED_ELEMENTS) {
-    const open = countOpen(html, tag);
-    const close = countClose(html, tag);
+    const open = countOpen(markup, tag);
+    const close = countClose(markup, tag);
     if (open !== close) {
       fail(
         `标签配对 <${tag}>`,
@@ -180,7 +369,7 @@ function verifyHtml(html) {
 
   // 2. 自闭合的 script/style：HTML 解析器忽略该斜杠 → 与未闭合等价，同样致命
   for (const tag of ['script', 'style']) {
-    const selfClosing = countMatches(html, `<${tag}(?=[\\s/>])[^>]*\\/>`, 'gi');
+    const selfClosing = countMatches(markup, `<${tag}(?=[\\s/>])[^>]*\\/>`, 'gi');
     if (selfClosing > 0) {
       fail(
         `自闭合 <${tag}>`,
@@ -191,7 +380,7 @@ function verifyHtml(html) {
   }
 
   // 3. 恰好 1 个 <title> 且内容非空
-  const titleOpen = countOpen(html, 'title');
+  const titleOpen = countOpen(markup, 'title');
   if (titleOpen !== 1) fail('<title> 数量', '恰好 1 个', `${titleOpen} 个`);
 
   const titleContent = /<title(?=[\s>])[^>]*>([\s\S]*?)<\/title>/i.exec(html);
@@ -234,10 +423,10 @@ function verifyHtml(html) {
 
   // 6. 文档骨架完整
   if (!/^<!doctype html>/im.test(html)) fail('<!doctype html>', '文档以 doctype 开头', '缺失');
-  if (countOpen(html, 'html') === 0) fail('<html>', '存在', '缺失');
-  if (countOpen(html, 'head') === 0) fail('<head>', '存在', '缺失');
-  if (countClose(html, 'body') === 0) fail('</body>', '存在', '缺失');
-  if (countClose(html, 'html') === 0) fail('</html>', '存在', '缺失');
+  if (countOpen(markup, 'html') === 0) fail('<html>', '存在', '缺失');
+  if (countOpen(markup, 'head') === 0) fail('<head>', '存在', '缺失');
+  if (countClose(markup, 'body') === 0) fail('</body>', '存在', '缺失');
+  if (countClose(markup, 'html') === 0) fail('</html>', '存在', '缺失');
   if (visibleTextLength(html) === 0) fail('文档可见文本', '全文非空', '去标签后文本长度为 0');
 
   // 7. 文档级的 charset / viewport 各**恰好一份**
@@ -245,11 +434,16 @@ function verifyHtml(html) {
   //    外壳 `index.html` 与 unhead 都声明过这两样（unhead 的 `createHead()` 默认塞
   //    `DEFAULT_INIT`），产物里曾各出现两次、且 `initial-scale` 一个 `1.0` 一个 `1`。
   //    `src/entry-server.ts` 已改 `disableDefaults: true` 让外壳独占，这里加一道防回归。
-  //    用 `<meta charset[\\s=]` 卡边界（属性写法的 `=` 也算），避免误命中别的标签
-  const charsetCount = countMatches(html, '<meta charset[\\s=]', 'gi');
+  //
+  //    ⚠️ 这两项必须在**标签列表**上数，不能在 `markup` 上数字符串：
+  //    `markup` 里的属性值已被清空（`<meta name="" content="">`），
+  //    `name="viewport"` 这个字面量已经不存在了。按标签数反而更准 ——
+  //    属性值里出现 `<meta name="viewport"` 这种文本不会被误命中。
+  const metaTags = tags.filter(tag => !tag.closing && tag.name === 'meta');
+  const charsetCount = metaTags.filter(tag => /^<meta\s+charset[\s=]/i.test(tag.raw)).length;
   if (charsetCount !== 1) fail('<meta charset> 数量', '恰好 1 个', `${charsetCount} 个`);
 
-  const viewportCount = countMatches(html, '<meta name="viewport"', 'gi');
+  const viewportCount = metaTags.filter(tag => /name\s*=\s*"viewport"/i.test(tag.raw)).length;
   if (viewportCount !== 1) fail('<meta name="viewport"> 数量', '恰好 1 个', `${viewportCount} 个`);
 
   // 8. JSON-LD（`<script type="application/ld+json">`）必须真的是合法 JSON，且内容里不能有裸 `<`
@@ -697,6 +891,11 @@ function main() {
   }
 
   console.log('✓ 门禁通过：全部产物标签配对、title 唯一且非空、#app 有内容。');
+  console.log(
+    '  （标签配对在**摘掉属性值**的标记上做：`content="测试 <pre> 标签"` 不会再误报；' +
+      '正文里的裸 `<script>` / `<pre>` 仍会被命中）'
+  );
+  console.log('  （另含：属性引号两两配对、标签都以 `>` 结束）');
   console.log('  （另含：charset/viewport 去重后各 1 个、JSON-LD 可 JSON.parse 且无裸 `<`）');
   console.log(
     '  （另含：rss.xml / sitemap.xml / robots.txt 存在且 XML 结构、转义、日期、绝对地址均合法）'
