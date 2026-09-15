@@ -4,9 +4,9 @@
   以及 `currentColor` 天然跟随主题色。
 -->
 <script setup lang="ts">
-import type { IconName } from '@/types/ui'
+  import type { IconName } from '@/types/ui';
 
-const props = defineProps<{ name: IconName }>()
+  const props = defineProps<{ name: IconName }>();
 </script>
 
 <template>

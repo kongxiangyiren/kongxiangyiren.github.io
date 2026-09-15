@@ -34,17 +34,17 @@ Proxy 只知道有人读了 `count`，不知道是谁读的。想知道「谁」
 这也是为什么依赖收集必须发生在**副作用同步执行**的过程中：
 
 ```ts
-import { effect } from './mini-reactivity'
+import { effect } from './mini-reactivity';
 
-const state = reactive({ count: 0 })
+const state = reactive({ count: 0 });
 
 // 执行期间 activeEffect 指向这个 effect，
 // 于是 state.count 的 get 陷阱会把 effect 记到 count 的依赖集合里
 effect(() => {
-  console.log(state.count)
-})
+  console.log(state.count);
+});
 
-state.count++ // 触发依赖集合里的 effect 重跑，打印 1
+state.count++; // 触发依赖集合里的 effect 重跑，打印 1
 ```
 
 ### 一个常见的误解
@@ -57,56 +57,56 @@ state.count++ // 触发依赖集合里的 effect 重跑，打印 1
 去掉调度器、去掉嵌套 effect 栈、去掉 `dirty` 缓存，剩下的骨架大概是这样：
 
 ```ts
-type EffectFn = () => void
+type EffectFn = () => void;
 
-let activeEffect: EffectFn | null = null
+let activeEffect: EffectFn | null = null;
 
 // 用 WeakMap 逐层往下挂，避免给业务对象加不可枚举属性
-const targetMap = new WeakMap<object, Map<string | symbol, Set<EffectFn>>>()
+const targetMap = new WeakMap<object, Map<string | symbol, Set<EffectFn>>>();
 
 function track(target: object, key: string | symbol) {
-  if (!activeEffect) return
-  let depsMap = targetMap.get(target)
-  if (!depsMap) targetMap.set(target, (depsMap = new Map()))
+  if (!activeEffect) return;
+  let depsMap = targetMap.get(target);
+  if (!depsMap) targetMap.set(target, (depsMap = new Map()));
 
-  let deps = depsMap.get(key)
-  if (!deps) depsMap.set(key, (deps = new Set()))
+  let deps = depsMap.get(key);
+  if (!deps) depsMap.set(key, (deps = new Set()));
 
-  deps.add(activeEffect)
+  deps.add(activeEffect);
 }
 
 function trigger(target: object, key: string | symbol) {
-  const deps = targetMap.get(target)?.get(key)
-  if (!deps) return
+  const deps = targetMap.get(target)?.get(key);
+  if (!deps) return;
   // 必须复制一份再遍历：effect 执行过程中可能再次触发同一次依赖修改
-  for (const fn of [...deps]) fn()
+  for (const fn of [...deps]) fn();
 }
 
 export function effect(fn: EffectFn) {
   const runner = () => {
-    activeEffect = runner
+    activeEffect = runner;
     try {
-      fn()
+      fn();
     } finally {
-      activeEffect = null
+      activeEffect = null;
     }
-  }
-  runner()
-  return runner
+  };
+  runner();
+  return runner;
 }
 
 export function reactive<T extends object>(target: T): T {
   return new Proxy(target, {
     get(obj, key, receiver) {
-      track(obj, key)
-      return Reflect.get(obj, key, receiver)
+      track(obj, key);
+      return Reflect.get(obj, key, receiver);
     },
     set(obj, key, value, receiver) {
-      const result = Reflect.set(obj, key, value, receiver)
-      trigger(obj, key)
-      return result
-    },
-  })
+      const result = Reflect.set(obj, key, value, receiver);
+      trigger(obj, key);
+      return result;
+    }
+  });
 }
 ```
 
@@ -142,12 +142,12 @@ export function reactive<T extends object>(target: T): T {
 `computed` 不是「每次都重算的函数」，而是**带缓存的副作用**。它内部维护一个 `dirty` 标记，
 只有依赖真的脏了才重算 —— 这就是 `computed` 和普通 getter 的本质区别。
 
-| 特性 | `ref` | `reactive` |
-| --- | --- | --- |
-| 可包装的值 | 任意类型 | 仅对象 |
-| 访问方式 | `.value` | 直接访问 |
-| 解构后 | 仍是响应式 | **丢失响应性** |
-| 模板中 | 自动解包 | 直接使用 |
+| 特性       | `ref`      | `reactive`     |
+| ---------- | ---------- | -------------- |
+| 可包装的值 | 任意类型   | 仅对象         |
+| 访问方式   | `.value`   | 直接访问       |
+| 解构后     | 仍是响应式 | **丢失响应性** |
+| 模板中     | 自动解包   | 直接使用       |
 
 ## 收尾
 

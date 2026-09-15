@@ -4,13 +4,13 @@
   所以打字 / 退格过程中下方元素不会跳动。光标闪烁的 keyframes 在 butterfly.scss。
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
+  import { computed } from 'vue';
 
-import { useTypewriter } from '@/composables/useTypewriter'
+  import { useTypewriter } from '@/composables/useTypewriter';
 
-const props = defineProps<{ text: string }>()
+  const props = defineProps<{ text: string }>();
 
-const { display, isStatic } = useTypewriter(computed(() => props.text))
+  const { display, isStatic } = useTypewriter(computed(() => props.text));
 </script>
 
 <template>

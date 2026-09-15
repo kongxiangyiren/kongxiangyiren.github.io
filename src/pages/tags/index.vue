@@ -7,29 +7,29 @@
   这就是「复用算法、不硬耦合视觉」的边界。
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
-import { tags } from 'virtual:blog/taxonomy'
+  import { computed } from 'vue';
+  import { tags } from 'virtual:blog/taxonomy';
 
-import { interpolateRatios } from '@/utils/taxonomy'
+  import { interpolateRatios } from '@/utils/taxonomy';
 
-/** 字号插值两端（rem）。整页比侧边栏放得开，所以两头都更大 */
-const MIN_SIZE = 0.95
-const MAX_SIZE = 1.6
+  /** 字号插值两端（rem）。整页比侧边栏放得开，所以两头都更大 */
+  const MIN_SIZE = 0.95;
+  const MAX_SIZE = 1.6;
 
-const cloud = computed(() => {
-  const ratios = interpolateRatios(tags.map((item) => item.count))
+  const cloud = computed(() => {
+    const ratios = interpolateRatios(tags.map(item => item.count));
 
-  return tags.map((item, index) => {
-    const ratio = ratios[index] ?? 0.5
-    return {
-      name: item.name,
-      count: item.count,
-      fontSize: `${(MIN_SIZE + (MAX_SIZE - MIN_SIZE) * ratio).toFixed(3)}rem`,
-      // 从正文字色渐变到主题色，亮 / 暗两种主题下都够清晰（与侧边栏同一套 color-mix）
-      color: `color-mix(in srgb, var(--primary) ${Math.round(35 + 65 * ratio)}%, var(--font-color))`,
-    }
-  })
-})
+    return tags.map((item, index) => {
+      const ratio = ratios[index] ?? 0.5;
+      return {
+        name: item.name,
+        count: item.count,
+        fontSize: `${(MIN_SIZE + (MAX_SIZE - MIN_SIZE) * ratio).toFixed(3)}rem`,
+        // 从正文字色渐变到主题色，亮 / 暗两种主题下都够清晰（与侧边栏同一套 color-mix）
+        color: `color-mix(in srgb, var(--primary) ${Math.round(35 + 65 * ratio)}%, var(--font-color))`
+      };
+    });
+  });
 </script>
 
 <template>

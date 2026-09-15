@@ -5,98 +5,98 @@
  * 这些值会在运行时被读取，所以放在 src/ 下而不是 *.env —— 内容是配置，不是密钥。
  */
 
-import type { IconName } from '@/types/ui'
+import type { IconName } from '@/types/ui';
 
 export interface SocialLink {
   /** AppIcon 的图标名 */
-  icon: IconName
+  icon: IconName;
   /** 无障碍标签 / 悬浮提示 */
-  label: string
-  href: string
+  label: string;
+  href: string;
 }
 
 export interface NavLink {
-  label: string
+  label: string;
   /** 与文件路由对齐的路径 */
-  to: string
+  to: string;
 }
 
 export interface SiteAuthor {
-  name: string
-  avatar: string
-  bio: string
+  name: string;
+  avatar: string;
+  bio: string;
 }
 
 /** 关于页「个人时间线」的一条 */
 export interface TimelineEntry {
   /** `YYYY-MM` 或 `YYYY-MM-DD`，**原样展示**（不做 Date 解析，避免时区漂移） */
-  date: string
-  title: string
+  date: string;
+  title: string;
   /** 可选，一两句话说明 */
-  description?: string
+  description?: string;
 }
 
 /** 友链页的一张卡片 */
 export interface FriendLink {
-  name: string
+  name: string;
   /** 头像图片地址（本地 `/images/...` 或外链均可）；加载失败时退化成首字占位块 */
-  avatar: string
-  description: string
-  url: string
+  avatar: string;
+  description: string;
+  url: string;
 }
 
 export interface SiteConfig {
-  title: string
+  title: string;
   /** 首屏打字机用的副标题（可含多个句号分隔的短句，会循环播放） */
-  subtitle: string
-  description: string
-  author: SiteAuthor
-  nav: NavLink[]
-  socials: SocialLink[]
+  subtitle: string;
+  description: string;
+  author: SiteAuthor;
+  nav: NavLink[];
+  socials: SocialLink[];
   /** 首页侧边栏公告卡内容。留空字符串则整张卡不渲染 */
-  announcement: string
+  announcement: string;
   /**
    * 首页每页文章数。
    * 注意：本站目前只有 3 篇文章，这里刻意设成 2 以便分页在开发期可见可测；
    * 文章多起来之后改成 10 更接近 Butterfly 默认观感。
    */
-  postsPerPage: number
+  postsPerPage: number;
   /** 页脚「已运行 X 天 Y 时 Z 分 S 秒」的起算日（YYYY-MM-DD） */
-  footerStartDate: string
+  footerStartDate: string;
   /** 备案号。境外服务器无备案 → 留空，页脚整行不渲染 */
-  icp: string
+  icp: string;
   /** 文章版权协议名。留空则版权卡只显示作者与链接，不显示协议 */
-  license: string
+  license: string;
   /** 协议详情链接 */
-  licenseUrl: string
+  licenseUrl: string;
   /**
    * 关于页的「技能 / 兴趣」标签。
    *
    * ⚠️ **空数组（默认）时整个区块不渲染** —— 这里刻意留空，因为站点信息只有站长自己
    * 知道，任何预填值都是编造。条目形状见文件末尾的注释示例。
    */
-  skills: string[]
+  skills: string[];
   /**
    * 关于页的「个人时间线」。
    *
    * ⚠️ 同上：默认空数组 = 该区块不渲染。**不要填你没经历过的事**。
    */
-  timeline: TimelineEntry[]
+  timeline: TimelineEntry[];
   /**
    * 友链列表。空数组时友链页显示「还没有友链」的空状态（申请说明照常显示）。
    *
    * ⚠️ 默认空数组是为了不虚构真实友链；形状见文件末尾的注释示例。
    */
-  friends: FriendLink[]
+  friends: FriendLink[];
   /**
    * 「申请友链」区块的说明文案。
    *
    * 这里给了一句中性的默认文案（没有涉及任何个人信息），站长可以改成自己的联系方式。
    * 留空字符串则整块不渲染。
    */
-  friendApplyNote: string
+  friendApplyNote: string;
   /** 申请要求清单。空数组则该列表不渲染（说明文案仍会显示） */
-  friendApplyRules: string[]
+  friendApplyRules: string[];
 }
 
 export const siteConfig: SiteConfig = {
@@ -106,7 +106,7 @@ export const siteConfig: SiteConfig = {
   author: {
     name: '空巷一人',
     avatar: '/images/avatar.svg',
-    bio: '前端开发者，写代码也写字。',
+    bio: '前端开发者，写代码也写字。'
   },
   nav: [
     { label: '首页', to: '/' },
@@ -114,12 +114,12 @@ export const siteConfig: SiteConfig = {
     { label: '标签', to: '/tags' },
     { label: '分类', to: '/categories' },
     { label: '关于', to: '/about' },
-    { label: '友链', to: '/friends' },
+    { label: '友链', to: '/friends' }
   ],
   socials: [
     { icon: 'github', label: 'GitHub', href: 'https://github.com/' },
     { icon: 'mail', label: 'Email', href: 'mailto:1530688385@qq.com' },
-    { icon: 'rss', label: 'RSS', href: '/rss.xml' },
+    { icon: 'rss', label: 'RSS', href: '/rss.xml' }
   ],
   announcement:
     '这个博客刚重新起步，文章会一篇篇补上。这里主要写前端工程、构建工具与偶尔的生活记录。',
@@ -157,6 +157,6 @@ export const siteConfig: SiteConfig = {
   friendApplyRules: [
     '站点有个性化的原创内容，且能持续更新',
     '已添加本站友链，或同意互访后再加',
-    '页面整洁，无自动播放音频与弹窗',
-  ],
-}
+    '页面整洁，无自动播放音频与弹窗'
+  ]
+};

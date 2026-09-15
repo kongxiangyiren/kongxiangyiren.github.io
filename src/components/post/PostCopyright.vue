@@ -10,38 +10,38 @@
   顺手去掉 hash：点 TOC 会往地址栏写 `#某章节`，那不是「原文」的一部分。
 -->
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+  import { nextTick, onMounted, ref, watch } from 'vue';
+  import { useRoute } from 'vue-router';
 
-import AppIcon from '@/components/common/AppIcon.vue'
-import { siteConfig } from '@/config/site'
-import { formatPostDate } from '@/utils/date'
+  import AppIcon from '@/components/common/AppIcon.vue';
+  import { siteConfig } from '@/config/site';
+  import { formatPostDate } from '@/utils/date';
 
-defineProps<{
-  /** 发表日期（`YYYY-MM-DD HH:mm:ss` 字面量） */
-  date: string
-}>()
+  defineProps<{
+    /** 发表日期（`YYYY-MM-DD HH:mm:ss` 字面量） */
+    date: string;
+  }>();
 
-const route = useRoute()
+  const route = useRoute();
 
-/** 当前页面绝对地址。挂载前是空串，对应的那一行不渲染（不给读屏用户一个空链接） */
-const pageUrl = ref('')
+  /** 当前页面绝对地址。挂载前是空串，对应的那一行不渲染（不给读屏用户一个空链接） */
+  const pageUrl = ref('');
 
-function syncPageUrl(): void {
-  const url = new URL(window.location.href)
-  url.hash = ''
-  pageUrl.value = url.toString()
-}
+  function syncPageUrl(): void {
+    const url = new URL(window.location.href);
+    url.hash = '';
+    pageUrl.value = url.toString();
+  }
 
-onMounted(syncPageUrl)
+  onMounted(syncPageUrl);
 
-watch(
-  () => route.fullPath,
-  async () => {
-    await nextTick()
-    syncPageUrl()
-  },
-)
+  watch(
+    () => route.fullPath,
+    async () => {
+      await nextTick();
+      syncPageUrl();
+    }
+  );
 </script>
 
 <template>

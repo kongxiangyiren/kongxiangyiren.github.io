@@ -6,47 +6,47 @@
  *   2. 浏览器没有 IntersectionObserver → 直接可见（宁可不动画，也不能留下看不见的内容）。
  *   3. 观察一次就断开，不为了一个一次性的入场动画常驻监听。
  */
-import { onMounted, onScopeDispose, ref } from 'vue'
-import { usePreferredReducedMotion } from '@vueuse/core'
+import { onMounted, onScopeDispose, ref } from 'vue';
+import { usePreferredReducedMotion } from '@vueuse/core';
 
 /** 元素要露出约 10% 才触发，避免刚碰到下边缘就播动画 */
-const DEFAULT_ROOT_MARGIN = '0px 0px -10% 0px'
+const DEFAULT_ROOT_MARGIN = '0px 0px -10% 0px';
 
 export function useReveal(rootMargin: string = DEFAULT_ROOT_MARGIN) {
-  const target = ref<HTMLElement | null>(null)
-  const revealed = ref(false)
-  const reducedMotion = usePreferredReducedMotion()
+  const target = ref<HTMLElement | null>(null);
+  const revealed = ref(false);
+  const reducedMotion = usePreferredReducedMotion();
 
-  let observer: IntersectionObserver | undefined
+  let observer: IntersectionObserver | undefined;
 
   const stopObserving = (): void => {
-    observer?.disconnect()
-    observer = undefined
-  }
+    observer?.disconnect();
+    observer = undefined;
+  };
 
   onMounted(() => {
     if (reducedMotion.value === 'reduce' || !target.value) {
-      revealed.value = true
-      return
+      revealed.value = true;
+      return;
     }
     // 老浏览器 / 非浏览器环境：没有这个 API 就退化成「立刻可见」
     if (typeof IntersectionObserver === 'undefined') {
-      revealed.value = true
-      return
+      revealed.value = true;
+      return;
     }
 
     observer = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return
-        revealed.value = true
-        stopObserving()
+      entries => {
+        if (!entries.some(entry => entry.isIntersecting)) return;
+        revealed.value = true;
+        stopObserving();
       },
-      { rootMargin },
-    )
-    observer.observe(target.value)
-  })
+      { rootMargin }
+    );
+    observer.observe(target.value);
+  });
 
-  onScopeDispose(stopObserving)
+  onScopeDispose(stopObserving);
 
-  return { target, revealed }
+  return { target, revealed };
 }

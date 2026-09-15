@@ -6,11 +6,11 @@
   数学部分在 `src/utils/uptime.ts`。
 -->
 <script setup lang="ts">
-import AppIcon from '@/components/common/AppIcon.vue'
-import { siteConfig } from '@/config/site'
-import { useUptime } from '@/composables/useUptime'
+  import AppIcon from '@/components/common/AppIcon.vue';
+  import { siteConfig } from '@/config/site';
+  import { useUptime } from '@/composables/useUptime';
 
-const { parts: uptime, copyrightYears } = useUptime()
+  const { parts: uptime, copyrightYears } = useUptime();
 </script>
 
 <template>

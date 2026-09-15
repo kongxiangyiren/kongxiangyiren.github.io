@@ -5,8 +5,8 @@
   但「申请友链」说明**照常显示**（页面的目的是招友链，不能因为还没友链就什么都不说）。
 -->
 <script setup lang="ts">
-import { siteConfig } from '@/config/site'
-import FriendCard from '@/components/friends/FriendCard.vue'
+  import { siteConfig } from '@/config/site';
+  import FriendCard from '@/components/friends/FriendCard.vue';
 </script>
 
 <template>

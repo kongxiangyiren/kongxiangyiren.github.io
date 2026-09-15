@@ -4,19 +4,19 @@
   都是元数据，不含正文，所以这张卡不会把任何文章的 HTML 拖进首页。
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
-import { posts } from 'virtual:blog/posts'
-import { categories, tags } from 'virtual:blog/taxonomy'
+  import { computed } from 'vue';
+  import { posts } from 'virtual:blog/posts';
+  import { categories, tags } from 'virtual:blog/taxonomy';
 
-import AppIcon from '@/components/common/AppIcon.vue'
-import SidebarCard from '@/components/sidebar/SidebarCard.vue'
-import { siteConfig } from '@/config/site'
+  import AppIcon from '@/components/common/AppIcon.vue';
+  import SidebarCard from '@/components/sidebar/SidebarCard.vue';
+  import { siteConfig } from '@/config/site';
 
-const stats = computed(() => [
-  { label: '文章', value: posts.length },
-  { label: '标签', value: tags.length },
-  { label: '分类', value: categories.length },
-])
+  const stats = computed(() => [
+    { label: '文章', value: posts.length },
+    { label: '标签', value: tags.length },
+    { label: '分类', value: categories.length }
+  ]);
 </script>
 
 <template>

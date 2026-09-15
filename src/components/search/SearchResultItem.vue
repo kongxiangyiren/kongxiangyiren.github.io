@@ -9,17 +9,17 @@
       「鼠标悬停」不会各说各话。
 -->
 <script setup lang="ts">
-import type { SearchResult } from '@/api/search'
-import AppIcon from '@/components/common/AppIcon.vue'
+  import type { SearchResult } from '@/api/search';
+  import AppIcon from '@/components/common/AppIcon.vue';
 
-const props = defineProps<{
-  result: SearchResult
-  id: string
-  /** 是否是当前键盘高亮项 */
-  active: boolean
-}>()
+  const props = defineProps<{
+    result: SearchResult;
+    id: string;
+    /** 是否是当前键盘高亮项 */
+    active: boolean;
+  }>();
 
-const emit = defineEmits<{ select: []; activate: [] }>()
+  const emit = defineEmits<{ select: []; activate: [] }>();
 </script>
 
 <template>
@@ -44,9 +44,9 @@ const emit = defineEmits<{ select: []; activate: [] }>()
       v-if="props.result.snippet.hit"
       class="mt-0.5 line-clamp-2 text-xs leading-relaxed text-font opacity-80"
     >
-      {{ props.result.snippet.prefix
-      }}<mark class="rounded-xs bg-primary/25 px-0.5 text-font">{{ props.result.snippet.hit }}</mark
-      >{{ props.result.snippet.suffix }}
+      {{ props.result.snippet.prefix }}
+      <mark class="rounded-xs bg-primary/25 px-0.5 text-font">{{ props.result.snippet.hit }}</mark>
+      {{ props.result.snippet.suffix }}
     </p>
     <p
       v-else-if="props.result.snippet.suffix"

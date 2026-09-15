@@ -9,26 +9,26 @@
     - 技能 / 兴趣、个人时间线：`skills` / `timeline` 为空数组时**整块不渲染**
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
-import { posts } from 'virtual:blog/posts'
-import { categories, tags } from 'virtual:blog/taxonomy'
+  import { computed } from 'vue';
+  import { posts } from 'virtual:blog/posts';
+  import { categories, tags } from 'virtual:blog/taxonomy';
 
-import AppIcon from '@/components/common/AppIcon.vue'
-import { siteConfig } from '@/config/site'
-import { useUptime } from '@/composables/useUptime'
+  import AppIcon from '@/components/common/AppIcon.vue';
+  import { siteConfig } from '@/config/site';
+  import { useUptime } from '@/composables/useUptime';
 
-const { parts: uptime } = useUptime()
+  const { parts: uptime } = useUptime();
 
-/** 总字数取构建期算好的 `wordCount` 求和 —— 与文章卡片上显示的「N 字」同一口径 */
-const totalWords = computed(() => posts.reduce((sum, post) => sum + post.wordCount, 0))
+  /** 总字数取构建期算好的 `wordCount` 求和 —— 与文章卡片上显示的「N 字」同一口径 */
+  const totalWords = computed(() => posts.reduce((sum, post) => sum + post.wordCount, 0));
 
-const stats = computed(() => [
-  { label: '文章', value: String(posts.length) },
-  { label: '标签', value: String(tags.length) },
-  { label: '分类', value: String(categories.length) },
-  { label: '总字数', value: totalWords.value.toLocaleString('en-US') },
-  { label: '已运行', value: `${uptime.value.days} 天` },
-])
+  const stats = computed(() => [
+    { label: '文章', value: String(posts.length) },
+    { label: '标签', value: String(tags.length) },
+    { label: '分类', value: String(categories.length) },
+    { label: '总字数', value: totalWords.value.toLocaleString('en-US') },
+    { label: '已运行', value: `${uptime.value.days} 天` }
+  ]);
 </script>
 
 <template>

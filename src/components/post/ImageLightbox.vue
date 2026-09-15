@@ -19,37 +19,37 @@
   无障碍树里可达（读屏能读到图，也能从 DOM 里取到 `src`）。
 -->
 <script setup lang="ts">
-import { computed, ref, toRef } from 'vue'
-import { usePreferredReducedMotion } from '@vueuse/core'
+  import { computed, ref, toRef } from 'vue';
+  import { usePreferredReducedMotion } from '@vueuse/core';
 
-import AppIcon from '@/components/common/AppIcon.vue'
-import { useFocusTrap } from '@/composables/useFocusTrap'
-import { useScrollLock } from '@/composables/useScrollLock'
+  import AppIcon from '@/components/common/AppIcon.vue';
+  import { useFocusTrap } from '@/composables/useFocusTrap';
+  import { useScrollLock } from '@/composables/useScrollLock';
 
-const props = defineProps<{
-  /** 由页面持有：组件会先以 open=false 挂载完，再翻成 true（见 [slug].vue 的 openLightbox） */
-  open: boolean
-  src: string
-  alt?: string
-}>()
+  const props = defineProps<{
+    /** 由页面持有：组件会先以 open=false 挂载完，再翻成 true（见 [slug].vue 的 openLightbox） */
+    open: boolean;
+    src: string;
+    alt?: string;
+  }>();
 
-const emit = defineEmits<{ close: [] }>()
+  const emit = defineEmits<{ close: [] }>();
 
-const panel = ref<HTMLElement | null>(null)
-const open = toRef(props, 'open')
-const reducedMotion = usePreferredReducedMotion()
+  const panel = ref<HTMLElement | null>(null);
+  const open = toRef(props, 'open');
+  const reducedMotion = usePreferredReducedMotion();
 
-/** reduce 时连过渡都不挂：`:css="false"` 让 Vue 直接跳过过渡检测 */
-const motionEnabled = computed(() => reducedMotion.value !== 'reduce')
+  /** reduce 时连过渡都不挂：`:css="false"` 让 Vue 直接跳过过渡检测 */
+  const motionEnabled = computed(() => reducedMotion.value !== 'reduce');
 
-function close(): void {
-  emit('close')
-}
+  function close(): void {
+    emit('close');
+  }
 
-// Esc / Tab 循环 / 焦点归还
-useFocusTrap({ container: panel, open, onClose: close })
-// 打开期间禁止背景滚动（与移动端抽屉共用一个引用计数锁）
-useScrollLock(open)
+  // Esc / Tab 循环 / 焦点归还
+  useFocusTrap({ container: panel, open, onClose: close });
+  // 打开期间禁止背景滚动（与移动端抽屉共用一个引用计数锁）
+  useScrollLock(open);
 </script>
 
 <template>
@@ -84,14 +84,14 @@ useScrollLock(open)
 </template>
 
 <style lang="scss" scoped>
-/* 只做淡入淡出，不做位移 —— 图片已经在做等比缩放，再加动效会很吵 */
-.lightbox-enter-active,
-.lightbox-leave-active {
-  transition: opacity 0.2s ease;
-}
+  /* 只做淡入淡出，不做位移 —— 图片已经在做等比缩放，再加动效会很吵 */
+  .lightbox-enter-active,
+  .lightbox-leave-active {
+    transition: opacity 0.2s ease;
+  }
 
-.lightbox-enter-from,
-.lightbox-leave-to {
-  opacity: 0;
-}
+  .lightbox-enter-from,
+  .lightbox-leave-to {
+    opacity: 0;
+  }
 </style>

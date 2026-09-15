@@ -13,11 +13,11 @@
   - 375px 不横向滚动：整块只有 `padding-left`，没有任何定宽/负 margin
 -->
 <script setup lang="ts">
-import type { ArchiveYear } from '@/types/blog'
+  import type { ArchiveYear } from '@/types/blog';
 
-import PostLinkList from '@/components/blog/PostLinkList.vue'
+  import PostLinkList from '@/components/blog/PostLinkList.vue';
 
-const props = defineProps<{ years: ArchiveYear[] }>()
+  const props = defineProps<{ years: ArchiveYear[] }>();
 </script>
 
 <template>

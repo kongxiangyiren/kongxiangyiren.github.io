@@ -10,10 +10,10 @@
 
 /** 已经拆好的时长，供模板按需取用（页脚要 天/时/分/秒，关于页只要 天） */
 export interface UptimeParts {
-  days: number
-  hours: number
-  minutes: number
-  seconds: number
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
 }
 
 /**
@@ -25,8 +25,8 @@ export interface UptimeParts {
  * 非法日期返回「现在」，等价于运行时长 0，页面上不会出现 `NaN 天`。
  */
 export function resolveStartTimestamp(dateText: string): number {
-  const parsed = new Date(`${dateText}T00:00:00`).getTime()
-  return Number.isNaN(parsed) ? Date.now() : parsed
+  const parsed = new Date(`${dateText}T00:00:00`).getTime();
+  return Number.isNaN(parsed) ? Date.now() : parsed;
 }
 
 /**
@@ -34,23 +34,23 @@ export function resolveStartTimestamp(dateText: string): number {
  * `startMs` 在未来（配置写错）时返回全 0，而不是负数。
  */
 export function splitUptime(nowMs: number, startMs: number): UptimeParts {
-  const totalSeconds = Math.max(0, Math.floor((nowMs - startMs) / 1000))
+  const totalSeconds = Math.max(0, Math.floor((nowMs - startMs) / 1000));
   return {
     days: Math.floor(totalSeconds / 86400),
     hours: Math.floor((totalSeconds % 86400) / 3600),
     minutes: Math.floor((totalSeconds % 3600) / 60),
-    seconds: totalSeconds % 60,
-  }
+    seconds: totalSeconds % 60
+  };
 }
 
 /** 文本形态的时长，供 `title` / 无障碍描述一类只需要一整句的地方使用 */
 export function formatUptime(parts: UptimeParts): string {
-  return `${parts.days} 天 ${parts.hours} 时 ${parts.minutes} 分 ${parts.seconds} 秒`
+  return `${parts.days} 天 ${parts.hours} 时 ${parts.minutes} 分 ${parts.seconds} 秒`;
 }
 
 /** 版权年份区间：起算年与当前年相同则只显示一年（`2026`，而不是 `2026 - 2026`） */
 export function resolveCopyrightYears(nowMs: number, startMs: number): string {
-  const startYear = new Date(startMs).getFullYear()
-  const currentYear = new Date(nowMs).getFullYear()
-  return currentYear > startYear ? `${startYear} - ${currentYear}` : String(startYear)
+  const startYear = new Date(startMs).getFullYear();
+  const currentYear = new Date(nowMs).getFullYear();
+  return currentYear > startYear ? `${startYear} - ${currentYear}` : String(startYear);
 }

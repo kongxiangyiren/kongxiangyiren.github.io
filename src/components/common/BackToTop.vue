@@ -12,40 +12,40 @@
    - 过渡用 `:css` 开关整体关掉，而不是把时长设成 0 —— reduce 时连过渡类都不挂。
 -->
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { usePreferredReducedMotion } from '@vueuse/core'
+  import { computed, onMounted, onUnmounted, ref } from 'vue';
+  import { usePreferredReducedMotion } from '@vueuse/core';
 
-import AppIcon from '@/components/common/AppIcon.vue'
+  import AppIcon from '@/components/common/AppIcon.vue';
 
-/** 与 el-backtop 的 `visibility-height` 对齐 */
-const VISIBILITY_HEIGHT = 200
+  /** 与 el-backtop 的 `visibility-height` 对齐 */
+  const VISIBILITY_HEIGHT = 200;
 
-const visible = ref(false)
-const reducedMotion = usePreferredReducedMotion()
+  const visible = ref(false);
+  const reducedMotion = usePreferredReducedMotion();
 
-/** reduce 时连 CSS 过渡都不要挂（`:css="false"` 让 Vue 直接跳过过渡检测） */
-const motionEnabled = computed(() => reducedMotion.value !== 'reduce')
+  /** reduce 时连 CSS 过渡都不要挂（`:css="false"` 让 Vue 直接跳过过渡检测） */
+  const motionEnabled = computed(() => reducedMotion.value !== 'reduce');
 
-function syncVisible(): void {
-  visible.value = window.scrollY > VISIBILITY_HEIGHT
-}
+  function syncVisible(): void {
+    visible.value = window.scrollY > VISIBILITY_HEIGHT;
+  }
 
-function scrollToTop(): void {
-  window.scrollTo({
-    top: 0,
-    behavior: motionEnabled.value ? 'smooth' : 'auto',
-  })
-}
+  function scrollToTop(): void {
+    window.scrollTo({
+      top: 0,
+      behavior: motionEnabled.value ? 'smooth' : 'auto'
+    });
+  }
 
-onMounted(() => {
-  // 初值也要算：带着滚动位置刷新、或直接进 `/#锚点` 时不能等第一次 scroll 才出现
-  syncVisible()
-  window.addEventListener('scroll', syncVisible, { passive: true })
-})
+  onMounted(() => {
+    // 初值也要算：带着滚动位置刷新、或直接进 `/#锚点` 时不能等第一次 scroll 才出现
+    syncVisible();
+    window.addEventListener('scroll', syncVisible, { passive: true });
+  });
 
-onUnmounted(() => {
-  window.removeEventListener('scroll', syncVisible)
-})
+  onUnmounted(() => {
+    window.removeEventListener('scroll', syncVisible);
+  });
 </script>
 
 <template>
@@ -64,20 +64,20 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss" scoped>
-/*
+  /*
  * 过渡只影响「出现 / 消失」这一下，不做位移（`translate` 在 fixed 元素上会引入新的包含块，
  * 也没必要），只做 opacity + 轻微缩放。
  */
-.back-to-top-enter-active,
-.back-to-top-leave-active {
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
+  .back-to-top-enter-active,
+  .back-to-top-leave-active {
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
+  }
 
-.back-to-top-enter-from,
-.back-to-top-leave-to {
-  opacity: 0;
-  transform: scale(0.8);
-}
+  .back-to-top-enter-from,
+  .back-to-top-leave-to {
+    opacity: 0;
+    transform: scale(0.8);
+  }
 </style>

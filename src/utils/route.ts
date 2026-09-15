@@ -7,19 +7,19 @@
 
 /** 取第一个参数值；缺席或类型不对时返回空串 */
 export function routeParam(value: unknown): string {
-  if (typeof value === 'string') return value
+  if (typeof value === 'string') return value;
   if (Array.isArray(value)) {
-    const first: unknown = value[0]
-    return typeof first === 'string' ? first : ''
+    const first: unknown = value[0];
+    return typeof first === 'string' ? first : '';
   }
-  return ''
+  return '';
 }
 
 /** 容错解码：已经是解码态（或含裸 `%`）时原样返回，而不是抛 URIError */
 export function safeDecode(value: string): string {
   try {
-    return decodeURIComponent(value)
+    return decodeURIComponent(value);
   } catch {
-    return value
+    return value;
   }
 }

@@ -4,12 +4,12 @@
   「取数据 + 空状态 + 页头计数」。
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
-import { archives } from 'virtual:blog/taxonomy'
+  import { computed } from 'vue';
+  import { archives } from 'virtual:blog/taxonomy';
 
-import ArchiveTimeline from '@/components/blog/ArchiveTimeline.vue'
+  import ArchiveTimeline from '@/components/blog/ArchiveTimeline.vue';
 
-const total = computed(() => archives.reduce((sum, year) => sum + year.count, 0))
+  const total = computed(() => archives.reduce((sum, year) => sum + year.count, 0));
 </script>
 
 <template>

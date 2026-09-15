@@ -6,8 +6,8 @@
  * 这里只抽**算法**，两端各自决定字号/颜色的端点 —— 侧边栏是窄卡、总览页是整页，
  * 视觉本来就不该一样（也就是不硬耦合）。
  */
-import type { TaxonomyItem } from '@/types/blog'
-import { safeDecode } from '@/utils/route'
+import type { TaxonomyItem } from '@/types/blog';
+import { safeDecode } from '@/utils/route';
 
 /**
  * 把一串「文章数」归一化成 `[0, 1]` 的权重（纯函数）。
@@ -18,16 +18,16 @@ import { safeDecode } from '@/utils/route'
  * 返回值与入参**下标一一对应**。
  */
 export function interpolateRatios(counts: readonly number[]): number[] {
-  if (counts.length === 0) return []
+  if (counts.length === 0) return [];
 
-  let min = Number.POSITIVE_INFINITY
-  let max = 0
+  let min = Number.POSITIVE_INFINITY;
+  let max = 0;
   for (const count of counts) {
-    if (count < min) min = count
-    if (count > max) max = count
+    if (count < min) min = count;
+    if (count > max) max = count;
   }
 
-  return counts.map((count) => (max === min ? 0.5 : (count - min) / (max - min)))
+  return counts.map(count => (max === min ? 0.5 : (count - min) / (max - min)));
 }
 
 /**
@@ -39,8 +39,8 @@ export function interpolateRatios(counts: readonly number[]): number[] {
  */
 export function findTaxonomyItem(items: TaxonomyItem[], rawName: string): TaxonomyItem | null {
   return (
-    items.find((item) => item.name === rawName) ??
-    items.find((item) => safeDecode(item.name) === rawName) ??
+    items.find(item => item.name === rawName) ??
+    items.find(item => safeDecode(item.name) === rawName) ??
     null
-  )
+  );
 }

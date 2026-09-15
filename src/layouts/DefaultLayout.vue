@@ -8,18 +8,18 @@
   页面自己用 `definePage({ meta: { fullBleed: true } })` 声明。
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+  import { computed } from 'vue';
+  import { useRoute } from 'vue-router';
 
-import BackToTop from '@/components/common/BackToTop.vue'
-import ReadingProgress from '@/components/common/ReadingProgress.vue'
-import AppFooter from '@/components/layout/AppFooter.vue'
-import AppHeader from '@/components/layout/AppHeader.vue'
+  import BackToTop from '@/components/common/BackToTop.vue';
+  import ReadingProgress from '@/components/common/ReadingProgress.vue';
+  import AppFooter from '@/components/layout/AppFooter.vue';
+  import AppHeader from '@/components/layout/AppHeader.vue';
 
-const route = useRoute()
+  const route = useRoute();
 
-/** 只认严格 `true`，meta 里写别的值一律当普通页面处理 */
-const fullBleed = computed(() => route.meta.fullBleed === true)
+  /** 只认严格 `true`，meta 里写别的值一律当普通页面处理 */
+  const fullBleed = computed(() => route.meta.fullBleed === true);
 </script>
 
 <template>

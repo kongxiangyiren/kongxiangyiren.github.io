@@ -1,0 +1,22 @@
+# 构建产物
+.output
+.nitro
+dist
+# `.gitignore` 里也留着它（脚手架遗留）。当前管线不再产出该目录，加进来是
+# 「将来若有人跑出这个目录，prettier 不会去改写构建产物」的保险，今天它是惰性的。
+dist-ssr
+node_modules
+
+# 由工具在构建 / dev 期生成，不是手写源码：
+#  · src/types/components.d.ts —— unplugin-vue-components 每次构建重写
+#  · typed-router.d.ts        —— vue-router/vite 每次构建重写
+src/types/components.d.ts
+typed-router.d.ts
+
+# 锁文件由包管理器生成：里面的引号 / 缩进 / 顺序都是它自己的格式约定，
+# 格式化会破坏其结构（并且让「机器可校验」这个意义失效）。
+pnpm-lock.yaml
+
+# agent 定义文件：YAML frontmatter + 大段中文说明文本，不是代码，
+# prettier 的 markdown 排版规则（行长 / 表格 / 列表缩进）对它没有意义。
+.github/agents/

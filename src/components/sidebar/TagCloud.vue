@@ -8,30 +8,30 @@
   字号端点仍留在本文件 —— 侧边栏是窄卡，和整页总览的视觉本来就不该一样。
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
-import { tags } from 'virtual:blog/taxonomy'
+  import { computed } from 'vue';
+  import { tags } from 'virtual:blog/taxonomy';
 
-import SidebarCard from '@/components/sidebar/SidebarCard.vue'
-import { interpolateRatios } from '@/utils/taxonomy'
+  import SidebarCard from '@/components/sidebar/SidebarCard.vue';
+  import { interpolateRatios } from '@/utils/taxonomy';
 
-/** 最小 / 最大字号（rem）—— 插值的两端 */
-const MIN_SIZE = 0.8125
-const MAX_SIZE = 1.25
+  /** 最小 / 最大字号（rem）—— 插值的两端 */
+  const MIN_SIZE = 0.8125;
+  const MAX_SIZE = 1.25;
 
-const cloud = computed(() => {
-  const ratios = interpolateRatios(tags.map((item) => item.count))
+  const cloud = computed(() => {
+    const ratios = interpolateRatios(tags.map(item => item.count));
 
-  return tags.map((item, index) => {
-    // 只有一个权重时取中值（`interpolateRatios` 已处理除零），避免字号全部跳到一端
-    const ratio = ratios[index] ?? 0.5
-    return {
-      name: item.name,
-      count: item.count,
-      fontSize: `${(MIN_SIZE + (MAX_SIZE - MIN_SIZE) * ratio).toFixed(3)}rem`,
-      color: `color-mix(in srgb, var(--primary) ${Math.round(35 + 65 * ratio)}%, var(--font-color))`,
-    }
-  })
-})
+    return tags.map((item, index) => {
+      // 只有一个权重时取中值（`interpolateRatios` 已处理除零），避免字号全部跳到一端
+      const ratio = ratios[index] ?? 0.5;
+      return {
+        name: item.name,
+        count: item.count,
+        fontSize: `${(MIN_SIZE + (MAX_SIZE - MIN_SIZE) * ratio).toFixed(3)}rem`,
+        color: `color-mix(in srgb, var(--primary) ${Math.round(35 + 65 * ratio)}%, var(--font-color))`
+      };
+    });
+  });
 </script>
 
 <template>

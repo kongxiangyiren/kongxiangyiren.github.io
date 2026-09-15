@@ -31,63 +31,63 @@
  *     正文索引有 800 字，关掉它等于只搜开头一段；
  *   - `includeMatches: true`：结果项要展示命中位置附近的片段，需要它给的 `indices`。
  */
-import { SEARCH_INDEX_FILE } from '@/constants/blog'
-import type { SearchIndexEntry } from '@/types/blog'
+import { SEARCH_INDEX_FILE } from '@/constants/blog';
+import type { SearchIndexEntry } from '@/types/blog';
 import {
   buildSnippet,
   headSnippet,
   resolveTextHitRange,
   type SearchMatchLike,
-  type Snippet,
-} from '@/utils/search'
+  type Snippet
+} from '@/utils/search';
 
-const SEARCH_INDEX_URL = `${import.meta.env.BASE_URL}${SEARCH_INDEX_FILE}`
+const SEARCH_INDEX_URL = `${import.meta.env.BASE_URL}${SEARCH_INDEX_FILE}`;
 
 /** 结果上限：弹窗里能舒服扫读的量级，再多也没人往下看 */
-const MAX_RESULTS = 8
+const MAX_RESULTS = 8;
 
 /** 一条搜索结果 */
 export interface SearchResult {
-  slug: string
-  title: string
-  tags: readonly string[]
-  categories: readonly string[]
+  slug: string;
+  title: string;
+  tags: readonly string[];
+  categories: readonly string[];
   /** 正文命中片段（标题命中时退化为正文开头） */
-  snippet: Snippet
+  snippet: Snippet;
 }
 
 /** Fuse 结果里我们真正用到的部分（结构类型，避免引入 fuse 的类型） */
 interface FuseHitLike {
-  item: SearchIndexEntry
-  matches?: readonly SearchMatchLike[]
+  item: SearchIndexEntry;
+  matches?: readonly SearchMatchLike[];
 }
 
 interface SearchEngine {
-  search(pattern: string): readonly FuseHitLike[]
+  search(pattern: string): readonly FuseHitLike[];
 }
 
-let pending: Promise<SearchIndexEntry[]> | null = null
+let pending: Promise<SearchIndexEntry[]> | null = null;
 
 export function loadSearchIndex(): Promise<SearchIndexEntry[]> {
   pending ??= fetch(SEARCH_INDEX_URL)
-    .then((response) => {
+    .then(response => {
       if (!response.ok) {
-        throw new Error(`搜索索引加载失败：HTTP ${response.status}`)
+        throw new Error(`搜索索引加载失败：HTTP ${response.status}`);
       }
-      return response.json() as Promise<SearchIndexEntry[]>
+      return response.json() as Promise<SearchIndexEntry[]>;
     })
     .catch((error: unknown) => {
       // 失败要清掉缓存，否则一次网络抖动会把失败结果永久钉住
-      pending = null
-      throw error
-    })
+      pending = null;
+      throw error;
+    });
 
-  return pending
+  return pending;
 }
 
 /** 已构建好的引擎；`null` 表示还没就绪（`searchPosts` 这时一律返回空数组） */
-let engine: { title: SearchEngine; body: SearchEngine } | null = null
-let preparing: Promise<void> | null = null
+let engine: { title: SearchEngine; body: SearchEngine } | null = null;
+let preparing: Promise<void> | null = null;
 
 /**
  * 加载索引并构建引擎。**幂等**：重复调用只会下载 / 构建一次。
@@ -97,8 +97,8 @@ export function prepareSearch(): Promise<void> {
   preparing ??= (async () => {
     const [{ default: FuseConstructor }, entries] = await Promise.all([
       import('fuse.js'),
-      loadSearchIndex(),
-    ])
+      loadSearchIndex()
+    ]);
 
     engine = {
       title: new FuseConstructor(entries, {
@@ -108,41 +108,41 @@ export function prepareSearch(): Promise<void> {
         keys: [
           { name: 'title', weight: 0.7 },
           { name: 'tags', weight: 0.2 },
-          { name: 'categories', weight: 0.1 },
-        ],
+          { name: 'categories', weight: 0.1 }
+        ]
       }),
       body: new FuseConstructor(entries, {
         includeMatches: true,
         ignoreLocation: true,
         threshold: 0.3,
-        keys: ['text'],
-      }),
-    }
+        keys: ['text']
+      })
+    };
   })().catch((error: unknown) => {
-    preparing = null
-    engine = null
-    throw error
-  })
+    preparing = null;
+    engine = null;
+    throw error;
+  });
 
-  return preparing
+  return preparing;
 }
 
 /** 引擎是否已就绪（组件用它决定还要不要显示 loading） */
 export function isSearchReady(): boolean {
-  return engine !== null
+  return engine !== null;
 }
 
 function toResult(hit: FuseHitLike): SearchResult {
-  const { item } = hit
-  const range = resolveTextHitRange(hit.matches, 'text')
+  const { item } = hit;
+  const range = resolveTextHitRange(hit.matches, 'text');
 
   return {
     slug: item.slug,
     title: item.title,
     tags: item.tags,
     categories: item.categories,
-    snippet: range ? buildSnippet(item.text, range.index, range.length) : headSnippet(item.text),
-  }
+    snippet: range ? buildSnippet(item.text, range.index, range.length) : headSnippet(item.text)
+  };
 }
 
 /**
@@ -153,12 +153,12 @@ function toResult(hit: FuseHitLike): SearchResult {
  * 只属于「引擎还没就绪」这一段。
  */
 export function searchPosts(query: string, limit: number = MAX_RESULTS): SearchResult[] {
-  const pattern = query.trim()
-  if (!engine || pattern.length === 0) return []
+  const pattern = query.trim();
+  if (!engine || pattern.length === 0) return [];
 
-  const primary = engine.title.search(pattern)
-  const seen = new Set(primary.map((hit) => hit.item.slug))
-  const secondary = engine.body.search(pattern).filter((hit) => !seen.has(hit.item.slug))
+  const primary = engine.title.search(pattern);
+  const seen = new Set(primary.map(hit => hit.item.slug));
+  const secondary = engine.body.search(pattern).filter(hit => !seen.has(hit.item.slug));
 
-  return [...primary, ...secondary].slice(0, limit).map(toResult)
+  return [...primary, ...secondary].slice(0, limit).map(toResult);
 }

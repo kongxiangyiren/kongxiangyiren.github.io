@@ -14,25 +14,25 @@
       两者特异性接近、顺序不可控。所以外层包一个只负责 reveal 的 div，卡片本体负责 hover。
 -->
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+  import { computed, ref } from 'vue';
 
-import AppIcon from '@/components/common/AppIcon.vue'
-import { useReveal } from '@/composables/useReveal'
-import type { BlogPostPreview } from '@/types/blog'
-import { formatPostDate, toDateTimeAttr } from '@/utils/date'
+  import AppIcon from '@/components/common/AppIcon.vue';
+  import { useReveal } from '@/composables/useReveal';
+  import type { BlogPostPreview } from '@/types/blog';
+  import { formatPostDate, toDateTimeAttr } from '@/utils/date';
 
-const props = defineProps<{ post: BlogPostPreview }>()
+  const props = defineProps<{ post: BlogPostPreview }>();
 
-const { target, revealed } = useReveal()
-const postUrl = computed(() => `/posts/${props.post.slug}`)
+  const { target, revealed } = useReveal();
+  const postUrl = computed(() => `/posts/${props.post.slug}`);
 
-/**
- * 封面加载失败 → 换成占位块。
- * 特意用 Vue 的 `@error` 而不是内联 `onerror` 字符串：后者在 CSP 下会被拦，
- * 而且拿不到组件作用域。卡片是 `v-for` 里按 slug `:key` 渲染的，切文章会重新挂载，
- * 所以不需要额外 watch 重置这个 flag。
- */
-const coverFailed = ref(false)
+  /**
+   * 封面加载失败 → 换成占位块。
+   * 特意用 Vue 的 `@error` 而不是内联 `onerror` 字符串：后者在 CSP 下会被拦，
+   * 而且拿不到组件作用域。卡片是 `v-for` 里按 slug `:key` 渲染的，切文章会重新挂载，
+   * 所以不需要额外 watch 重置这个 flag。
+   */
+  const coverFailed = ref(false);
 </script>
 
 <template>
@@ -79,7 +79,7 @@ const coverFailed = ref(false)
         <h2 class="text-lg leading-snug font-semibold">
           <RouterLink
             :to="postUrl"
-            class="text-font transition-colors after:absolute after:inset-0 group-hover:text-primary"
+            class="text-font transition-colors group-hover:text-primary after:absolute after:inset-0"
           >
             {{ post.title }}
           </RouterLink>

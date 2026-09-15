@@ -17,25 +17,25 @@
  *     （见 src/styles/tailwind.css），滚动条位置一直是预留的。
  */
 
-import { onScopeDispose, watch, type Ref } from 'vue'
+import { onScopeDispose, watch, type Ref } from 'vue';
 
 /** 当前持有锁的浮层数量 */
-let holders = 0
+let holders = 0;
 /** 第一次加锁前的内联值，最后一个解锁者负责还原 */
-let previousOverflow = ''
+let previousOverflow = '';
 
 function acquire(): void {
   if (holders === 0) {
-    previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
   }
-  holders += 1
+  holders += 1;
 }
 
 function release(): void {
-  if (holders === 0) return
-  holders -= 1
-  if (holders === 0) document.body.style.overflow = previousOverflow
+  if (holders === 0) return;
+  holders -= 1;
+  if (holders === 0) document.body.style.overflow = previousOverflow;
 }
 
 /**
@@ -44,23 +44,23 @@ function release(): void {
  * @param locked 为 `true` 期间锁住滚动；组件卸载时若仍持有锁会自动释放
  */
 export function useScrollLock(locked: Ref<boolean>): void {
-  let held = false
+  let held = false;
 
   watch(
     locked,
-    (value) => {
-      if (value === held) return
-      held = value
-      if (value) acquire()
-      else release()
+    value => {
+      if (value === held) return;
+      held = value;
+      if (value) acquire();
+      else release();
     },
-    { immediate: true },
-  )
+    { immediate: true }
+  );
 
   // 打开状态下组件被卸载（例如整体切走），不能把锁留在页面上
   onScopeDispose(() => {
-    if (!held) return
-    held = false
-    release()
-  })
+    if (!held) return;
+    held = false;
+    release();
+  });
 }

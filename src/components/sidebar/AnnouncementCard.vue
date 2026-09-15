@@ -3,9 +3,9 @@
   这里再做一次兜底判断，避免被别处引用时出现空壳。
 -->
 <script setup lang="ts">
-import SidebarCard from '@/components/sidebar/SidebarCard.vue'
+  import SidebarCard from '@/components/sidebar/SidebarCard.vue';
 
-const props = defineProps<{ content: string }>()
+  const props = defineProps<{ content: string }>();
 </script>
 
 <template>

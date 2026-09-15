@@ -10,15 +10,15 @@
   少了任何一侧时，剩下那张卡会自己留在正确的列上（左侧 / 右侧），不需要条件类。
 -->
 <script setup lang="ts">
-import AppIcon from '@/components/common/AppIcon.vue'
-import type { BlogPostMeta } from '@/types/blog'
+  import AppIcon from '@/components/common/AppIcon.vue';
+  import type { BlogPostMeta } from '@/types/blog';
 
-defineProps<{
-  /** 数组顺序上的前一篇；已经是最新一篇时为 null */
-  prev: BlogPostMeta | null
-  /** 数组顺序上的后一篇；已经是最旧一篇时为 null */
-  next: BlogPostMeta | null
-}>()
+  defineProps<{
+    /** 数组顺序上的前一篇；已经是最新一篇时为 null */
+    prev: BlogPostMeta | null;
+    /** 数组顺序上的后一篇；已经是最旧一篇时为 null */
+    next: BlogPostMeta | null;
+  }>();
 </script>
 
 <template>

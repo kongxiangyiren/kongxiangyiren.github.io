@@ -3,10 +3,10 @@
   标题左侧那道主题色小竖条是 Butterfly 侧栏卡的标志性细节。
 -->
 <script setup lang="ts">
-import AppIcon from '@/components/common/AppIcon.vue'
-import type { IconName } from '@/types/ui'
+  import AppIcon from '@/components/common/AppIcon.vue';
+  import type { IconName } from '@/types/ui';
 
-defineProps<{ title: string; icon?: IconName }>()
+  defineProps<{ title: string; icon?: IconName }>();
 </script>
 
 <template>

@@ -11,7 +11,7 @@
  * 监听器只在 `open === true` 期间挂在 `document` 上，关闭即摘 —— 不为了一个偶尔用的
  * 抽屉常驻全局监听。
  */
-import { nextTick, onScopeDispose, watch, type Ref } from 'vue'
+import { nextTick, onScopeDispose, watch, type Ref } from 'vue';
 
 /**
  * 可聚焦元素选择器。
@@ -23,20 +23,20 @@ const FOCUSABLE_SELECTOR = [
   'input:not([disabled])',
   'select:not([disabled])',
   'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-].join(',')
+  '[tabindex]:not([tabindex="-1"])'
+].join(',');
 
 export interface UseFocusTrapOptions {
   /** 陷阱边界容器（抽屉面板），需带 `tabindex="-1"` 作为无子元素时的兜底焦点目标 */
-  container: Ref<HTMLElement | null>
-  open: Ref<boolean>
+  container: Ref<HTMLElement | null>;
+  open: Ref<boolean>;
   /** 按下 Esc 时调用（通常是关闭） */
-  onClose: () => void
+  onClose: () => void;
 }
 
 export function useFocusTrap({ container, open, onClose }: UseFocusTrapOptions): void {
   /** 打开前的焦点所在元素，关闭时还给它 */
-  let restoreTo: HTMLElement | null = null
+  let restoreTo: HTMLElement | null = null;
 
   /**
    * 只取**真正可见**的元素。
@@ -44,65 +44,65 @@ export function useFocusTrap({ container, open, onClose }: UseFocusTrapOptions):
    * 时 `offsetParent` 恒为 `null`，会把全部合法元素误判为不可见（抽屉面板就是 fixed 的子节点）。
    */
   function focusables(): HTMLElement[] {
-    const root = container.value
-    if (!root) return []
+    const root = container.value;
+    if (!root) return [];
     return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-      (el) => el.getClientRects().length > 0,
-    )
+      el => el.getClientRects().length > 0
+    );
   }
 
   function onKeydown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {
-      event.preventDefault()
-      onClose()
-      return
+      event.preventDefault();
+      onClose();
+      return;
     }
-    if (event.key !== 'Tab') return
+    if (event.key !== 'Tab') return;
 
-    const items = focusables()
-    const first = items[0]
-    const last = items[items.length - 1]
+    const items = focusables();
+    const first = items[0];
+    const last = items[items.length - 1];
 
     if (!first || !last) {
       // 容器里没有可聚焦元素：宁可什么都不做，也不能让焦点漏到背景页面上
-      event.preventDefault()
-      return
+      event.preventDefault();
+      return;
     }
 
-    const active = document.activeElement
-    const inside = container.value?.contains(active) ?? false
+    const active = document.activeElement;
+    const inside = container.value?.contains(active) ?? false;
 
     if (event.shiftKey) {
       if (active === first || !inside) {
-        event.preventDefault()
-        last.focus()
+        event.preventDefault();
+        last.focus();
       }
-      return
+      return;
     }
 
     if (active === last || !inside) {
-      event.preventDefault()
-      first.focus()
+      event.preventDefault();
+      first.focus();
     }
   }
 
-  watch(open, async (isOpen) => {
+  watch(open, async isOpen => {
     if (!isOpen) {
-      document.removeEventListener('keydown', onKeydown)
-      restoreTo?.focus()
-      restoreTo = null
-      return
+      document.removeEventListener('keydown', onKeydown);
+      restoreTo?.focus();
+      restoreTo = null;
+      return;
     }
 
-    restoreTo = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    document.addEventListener('keydown', onKeydown)
+    restoreTo = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    document.addEventListener('keydown', onKeydown);
 
     // 等 Transition 把面板挂进 DOM 再聚焦
-    await nextTick()
-    const items = focusables()
-    ;(items[0] ?? container.value)?.focus()
-  })
+    await nextTick();
+    const items = focusables();
+    (items[0] ?? container.value)?.focus();
+  });
 
   // 组件在打开状态下被卸载（例如整体切走）也不能留下全局监听
-  onScopeDispose(() => document.removeEventListener('keydown', onKeydown))
+  onScopeDispose(() => document.removeEventListener('keydown', onKeydown));
 }

@@ -5,10 +5,10 @@
  * 所以这里直接切片，不做任何 Date 解析 —— 二次解析会把时区偏移再叠加一次。
  */
 export function formatPostDate(value: string, withTime = false): string {
-  return withTime ? value.slice(0, 16) : value.slice(0, 10)
+  return withTime ? value.slice(0, 16) : value.slice(0, 10);
 }
 
 /** 供 <time datetime="..."> 使用 */
 export function toDateTimeAttr(value: string): string {
-  return value.slice(0, 10)
+  return value.slice(0, 10);
 }

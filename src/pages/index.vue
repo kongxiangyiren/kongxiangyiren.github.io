@@ -8,59 +8,59 @@
   分页状态放在 URL 的 `?page=` 上：刷新、前进后退、分享链接都能还原。
 -->
 <script setup lang="ts">
-import { computed, nextTick } from 'vue'
-import { usePreferredReducedMotion } from '@vueuse/core'
-import { useRoute, useRouter } from 'vue-router'
-import { posts } from 'virtual:blog/posts'
+  import { computed, nextTick } from 'vue';
+  import { usePreferredReducedMotion } from '@vueuse/core';
+  import { useRoute, useRouter } from 'vue-router';
+  import { posts } from 'virtual:blog/posts';
 
-import PostCard from '@/components/blog/PostCard.vue'
-import PostPagination from '@/components/blog/PostPagination.vue'
-import HomeBanner from '@/components/home/HomeBanner.vue'
-import AnnouncementCard from '@/components/sidebar/AnnouncementCard.vue'
-import AuthorCard from '@/components/sidebar/AuthorCard.vue'
-import RecentPostsCard from '@/components/sidebar/RecentPostsCard.vue'
-import TagCloud from '@/components/sidebar/TagCloud.vue'
-import { siteConfig } from '@/config/site'
+  import PostCard from '@/components/blog/PostCard.vue';
+  import PostPagination from '@/components/blog/PostPagination.vue';
+  import HomeBanner from '@/components/home/HomeBanner.vue';
+  import AnnouncementCard from '@/components/sidebar/AnnouncementCard.vue';
+  import AuthorCard from '@/components/sidebar/AuthorCard.vue';
+  import RecentPostsCard from '@/components/sidebar/RecentPostsCard.vue';
+  import TagCloud from '@/components/sidebar/TagCloud.vue';
+  import { siteConfig } from '@/config/site';
 
-definePage({ meta: { fullBleed: true } })
+  definePage({ meta: { fullBleed: true } });
 
-/** 与 HomeBanner 里下滚箭头指向的锚点一致 */
-const CONTENT_ID = 'home-content'
+  /** 与 HomeBanner 里下滚箭头指向的锚点一致 */
+  const CONTENT_ID = 'home-content';
 
-const route = useRoute()
-const router = useRouter()
-const reducedMotion = usePreferredReducedMotion()
+  const route = useRoute();
+  const router = useRouter();
+  const reducedMotion = usePreferredReducedMotion();
 
-const perPage = siteConfig.postsPerPage
-const totalPages = computed(() => Math.max(1, Math.ceil(posts.length / perPage)))
+  const perPage = siteConfig.postsPerPage;
+  const totalPages = computed(() => Math.max(1, Math.ceil(posts.length / perPage)));
 
-/**
- * 分页只由 URL 派生（单一真相来源），没有本地 ref —— 这样前进 / 后退天然正确。
- * 越界或非法值（`?page=abc`、`?page=99`）一律夹到 [1, totalPages]。
- */
-const currentPage = computed(() => {
-  const raw = Number(route.query.page)
-  if (!Number.isFinite(raw)) return 1
-  return Math.min(Math.max(1, Math.trunc(raw)), totalPages.value)
-})
+  /**
+   * 分页只由 URL 派生（单一真相来源），没有本地 ref —— 这样前进 / 后退天然正确。
+   * 越界或非法值（`?page=abc`、`?page=99`）一律夹到 [1, totalPages]。
+   */
+  const currentPage = computed(() => {
+    const raw = Number(route.query.page);
+    if (!Number.isFinite(raw)) return 1;
+    return Math.min(Math.max(1, Math.trunc(raw)), totalPages.value);
+  });
 
-const pagePosts = computed(() => {
-  const start = (currentPage.value - 1) * perPage
-  return posts.slice(start, start + perPage)
-})
+  const pagePosts = computed(() => {
+    const start = (currentPage.value - 1) * perPage;
+    return posts.slice(start, start + perPage);
+  });
 
-async function handlePageChange(page: number): Promise<void> {
-  const query = { ...route.query }
-  if (page <= 1) delete query.page
-  else query.page = String(page)
+  async function handlePageChange(page: number): Promise<void> {
+    const query = { ...route.query };
+    if (page <= 1) delete query.page;
+    else query.page = String(page);
 
-  await router.push({ query })
-  await nextTick()
-  document.getElementById(CONTENT_ID)?.scrollIntoView({
-    behavior: reducedMotion.value === 'reduce' ? 'auto' : 'smooth',
-    block: 'start',
-  })
-}
+    await router.push({ query });
+    await nextTick();
+    document.getElementById(CONTENT_ID)?.scrollIntoView({
+      behavior: reducedMotion.value === 'reduce' ? 'auto' : 'smooth',
+      block: 'start'
+    });
+  }
 </script>
 
 <template>

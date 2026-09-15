@@ -13,35 +13,35 @@
   互相打架（Vue 不会因为用户点了 summary 而重新渲染）。用 button 驱动更可控。
 -->
 <script setup lang="ts">
-import { computed, ref, useId } from 'vue'
+  import { computed, ref, useId } from 'vue';
 
-import AppIcon from '@/components/common/AppIcon.vue'
-import type { TocItem } from '@/types/blog'
+  import AppIcon from '@/components/common/AppIcon.vue';
+  import type { TocItem } from '@/types/blog';
 
-const props = withDefaults(
-  defineProps<{
-    items: TocItem[]
-    /** 当前高亮项的 id */
-    activeId?: string
-    variant?: 'desktop' | 'mobile'
-  }>(),
-  { activeId: '', variant: 'desktop' },
-)
+  const props = withDefaults(
+    defineProps<{
+      items: TocItem[];
+      /** 当前高亮项的 id */
+      activeId?: string;
+      variant?: 'desktop' | 'mobile';
+    }>(),
+    { activeId: '', variant: 'desktop' }
+  );
 
-const emit = defineEmits<{ select: [id: string] }>()
+  const emit = defineEmits<{ select: [id: string] }>();
 
-/** 移动端默认折叠（Butterfly 详情页的目录是收起的） */
-const expanded = ref(false)
+  /** 移动端默认折叠（Butterfly 详情页的目录是收起的） */
+  const expanded = ref(false);
 
-/**
- * `aria-controls` 要指向一个稳定 id，而两种 variant 可能同时在 DOM 里
- * （一个 `display:none`），所以不能写死 —— 用 `useId()` 取进程内唯一值。
- */
-const listId = `post-toc-${useId()}`
+  /**
+   * `aria-controls` 要指向一个稳定 id，而两种 variant 可能同时在 DOM 里
+   * （一个 `display:none`），所以不能写死 —— 用 `useId()` 取进程内唯一值。
+   */
+  const listId = `post-toc-${useId()}`;
 
-const isMobile = computed(() => props.variant === 'mobile')
-/** 桌面端永远展开；移动端听 `expanded`。`v-show` 用 `display:none` → 收起时不在无障碍树里 */
-const showList = computed(() => !isMobile.value || expanded.value)
+  const isMobile = computed(() => props.variant === 'mobile');
+  /** 桌面端永远展开；移动端听 `expanded`。`v-show` 用 `display:none` → 收起时不在无障碍树里 */
+  const showList = computed(() => !isMobile.value || expanded.value);
 </script>
 
 <template>
@@ -101,16 +101,16 @@ const showList = computed(() => !isMobile.value || expanded.value)
 </template>
 
 <style lang="scss" scoped>
-/*
+  /*
  * 折叠箭头。`aria-expanded` 已经表达了状态，这里只是把状态画出来 ——
  * 用 Sass 而不是 Tailwind 的 `group-open:` 之类的变体，是因为这里的开关
  * 来自组件状态（expanded ref），一条两行的规则比拼可读性更好。
  */
-.toc-chevron {
-  transition: transform 0.2s ease;
+  .toc-chevron {
+    transition: transform 0.2s ease;
 
-  &--open {
-    transform: rotate(180deg);
+    &--open {
+      transform: rotate(180deg);
+    }
   }
-}
 </style>

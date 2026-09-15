@@ -6,9 +6,9 @@
   计数直接取 taxonomy 的 `count`（构建期算好），不在前端重算。
 -->
 <script setup lang="ts">
-import { categories } from 'virtual:blog/taxonomy'
+  import { categories } from 'virtual:blog/taxonomy';
 
-import AppIcon from '@/components/common/AppIcon.vue'
+  import AppIcon from '@/components/common/AppIcon.vue';
 </script>
 
 <template>

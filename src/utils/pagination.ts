@@ -18,19 +18,19 @@
  */
 
 /** 与改造前 el-pagination 的 `pager-count` 对齐 */
-export const DEFAULT_PAGER_COUNT = 5
+export const DEFAULT_PAGER_COUNT = 5;
 
 /** 一个省略号按钮点击后越过多少页（EP 里是 `pagerCount - 2`） */
-export const PAGER_JUMP_STEP = DEFAULT_PAGER_COUNT - 2
+export const PAGER_JUMP_STEP = DEFAULT_PAGER_COUNT - 2;
 
 export type PagerItem =
   | { readonly type: 'page'; readonly page: number }
   | {
-      readonly type: 'jump'
-      readonly key: 'prev-more' | 'next-more'
+      readonly type: 'jump';
+      readonly key: 'prev-more' | 'next-more';
       /** 点一下就跳到第几页 */
-      readonly target: number
-    }
+      readonly target: number;
+    };
 
 /**
  * 生成页码序列（含首尾页与省略号）。
@@ -42,48 +42,48 @@ export type PagerItem =
 export function buildPagerItems(
   pageCount: number,
   currentPage: number,
-  pagerCount: number = DEFAULT_PAGER_COUNT,
+  pagerCount: number = DEFAULT_PAGER_COUNT
 ): PagerItem[] {
-  if (!Number.isFinite(pageCount) || pageCount <= 0) return []
+  if (!Number.isFinite(pageCount) || pageCount <= 0) return [];
 
-  const count = Math.trunc(pageCount)
-  const current = Math.min(Math.max(1, Math.trunc(currentPage) || 1), count)
-  const half = (pagerCount - 1) / 2
+  const count = Math.trunc(pageCount);
+  const current = Math.min(Math.max(1, Math.trunc(currentPage) || 1), count);
+  const half = (pagerCount - 1) / 2;
 
   // pageCount <= pagerCount 时 EP 两个开关恒为 false，会走最后那个「展开全部」分支
-  const showPrevMore = count > pagerCount && current > pagerCount - half
-  const showNextMore = count > pagerCount && current < count - half
+  const showPrevMore = count > pagerCount && current > pagerCount - half;
+  const showNextMore = count > pagerCount && current < count - half;
 
-  const middle: number[] = []
+  const middle: number[] = [];
   if (showPrevMore && !showNextMore) {
     // 贴右端：补满 pagerCount - 2 个页号（首尾各占一个）
-    const startPage = count - (pagerCount - 2)
-    for (let i = startPage; i < count; i += 1) middle.push(i)
+    const startPage = count - (pagerCount - 2);
+    for (let i = startPage; i < count; i += 1) middle.push(i);
   } else if (!showPrevMore && showNextMore) {
     // 贴左端
-    for (let i = 2; i < pagerCount; i += 1) middle.push(i)
+    for (let i = 2; i < pagerCount; i += 1) middle.push(i);
   } else if (showPrevMore && showNextMore) {
     // 居中：当前页两侧各 Math.floor(pagerCount / 2) - 1 = 1 个
-    const offset = Math.floor(pagerCount / 2) - 1
-    for (let i = current - offset; i <= current + offset; i += 1) middle.push(i)
+    const offset = Math.floor(pagerCount / 2) - 1;
+    for (let i = current - offset; i <= current + offset; i += 1) middle.push(i);
   } else {
-    for (let i = 2; i < count; i += 1) middle.push(i)
+    for (let i = 2; i < count; i += 1) middle.push(i);
   }
 
-  const jumpStep = pagerCount - 2
+  const jumpStep = pagerCount - 2;
 
-  const items: PagerItem[] = [{ type: 'page', page: 1 }]
+  const items: PagerItem[] = [{ type: 'page', page: 1 }];
 
   if (showPrevMore) {
-    items.push({ type: 'jump', key: 'prev-more', target: Math.max(1, current - jumpStep) })
+    items.push({ type: 'jump', key: 'prev-more', target: Math.max(1, current - jumpStep) });
   }
-  for (const page of middle) items.push({ type: 'page', page })
+  for (const page of middle) items.push({ type: 'page', page });
   if (showNextMore) {
-    items.push({ type: 'jump', key: 'next-more', target: Math.min(count, current + jumpStep) })
+    items.push({ type: 'jump', key: 'next-more', target: Math.min(count, current + jumpStep) });
   }
 
   // EP 在 pageCount === 1 时不会渲染末页（否则会出现两个 "1"）
-  if (count > 1) items.push({ type: 'page', page: count })
+  if (count > 1) items.push({ type: 'page', page: count });
 
-  return items
+  return items;
 }

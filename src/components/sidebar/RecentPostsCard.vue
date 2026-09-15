@@ -4,18 +4,18 @@
   所以这里必须自己再排一次，不能直接 slice。
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
-import { posts } from 'virtual:blog/posts'
+  import { computed } from 'vue';
+  import { posts } from 'virtual:blog/posts';
 
-import SidebarCard from '@/components/sidebar/SidebarCard.vue'
-import { formatPostDate, toDateTimeAttr } from '@/utils/date'
+  import SidebarCard from '@/components/sidebar/SidebarCard.vue';
+  import { formatPostDate, toDateTimeAttr } from '@/utils/date';
 
-/** 最近 N 篇 */
-const LIMIT = 5
+  /** 最近 N 篇 */
+  const LIMIT = 5;
 
-const recent = computed(() =>
-  [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, LIMIT),
-)
+  const recent = computed(() =>
+    [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, LIMIT)
+  );
 </script>
 
 <template>

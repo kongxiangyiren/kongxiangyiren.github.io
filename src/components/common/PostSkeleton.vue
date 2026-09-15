@@ -9,7 +9,7 @@
   用 `sr-only` 文本 + `aria-busy` 承担。
 -->
 <script setup lang="ts">
-withDefaults(defineProps<{ lines?: number }>(), { lines: 6 })
+  withDefaults(defineProps<{ lines?: number }>(), { lines: 6 });
 </script>
 
 <template>

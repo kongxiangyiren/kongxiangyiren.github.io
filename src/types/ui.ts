@@ -17,4 +17,4 @@ export type IconName =
   | 'github'
   | 'mail'
   | 'rss'
-  | 'link'
+  | 'link';

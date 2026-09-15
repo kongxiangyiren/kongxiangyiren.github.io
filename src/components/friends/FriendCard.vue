@@ -9,13 +9,13 @@
       卡片是 `v-for` 里按 url `:key` 渲染的，换数据就重新挂载，flag 天然跟着重置。
 -->
 <script setup lang="ts">
-import { ref } from 'vue'
+  import { ref } from 'vue';
 
-import type { FriendLink } from '@/config/site'
+  import type { FriendLink } from '@/config/site';
 
-const props = defineProps<{ friend: FriendLink }>()
+  const props = defineProps<{ friend: FriendLink }>();
 
-const avatarFailed = ref(false)
+  const avatarFailed = ref(false);
 </script>
 
 <template>

@@ -18,166 +18,166 @@
   焦点**始终留在输入框**里，方向键只移动高亮 —— 键盘用户不必在输入框与列表间来回 Tab。
 -->
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, toRef, useId, watch } from 'vue'
-import { usePreferredReducedMotion } from '@vueuse/core'
-import { useRouter } from 'vue-router'
+  import { computed, nextTick, onBeforeUnmount, ref, toRef, useId, watch } from 'vue';
+  import { usePreferredReducedMotion } from '@vueuse/core';
+  import { useRouter } from 'vue-router';
 
-import { isSearchReady, prepareSearch, searchPosts, type SearchResult } from '@/api/search'
-import AppIcon from '@/components/common/AppIcon.vue'
-import SearchResultItem from '@/components/search/SearchResultItem.vue'
-import { useFocusTrap } from '@/composables/useFocusTrap'
-import { useScrollLock } from '@/composables/useScrollLock'
+  import { isSearchReady, prepareSearch, searchPosts, type SearchResult } from '@/api/search';
+  import AppIcon from '@/components/common/AppIcon.vue';
+  import SearchResultItem from '@/components/search/SearchResultItem.vue';
+  import { useFocusTrap } from '@/composables/useFocusTrap';
+  import { useScrollLock } from '@/composables/useScrollLock';
 
-const props = defineProps<{ open: boolean }>()
-const emit = defineEmits<{ close: [] }>()
+  const props = defineProps<{ open: boolean }>();
+  const emit = defineEmits<{ close: [] }>();
 
-/**
- * 输入防抖。3 篇文章的索引就算每击键都重算也感觉不到，但索引会随文章数增长：
- * 两趟 Fuse 检索是 O(文章数)，没有这个闸门，打字越快越卡。
- */
-const DEBOUNCE_MS = 180
-
-const router = useRouter()
-const reducedMotion = usePreferredReducedMotion()
-
-/** 同一页可能有多个弹窗实例（理论上），用 useId 保证 listbox / option 的 id 不撞车 */
-const uid = useId()
-
-const open = toRef(props, 'open')
-const panel = ref<HTMLElement | null>(null)
-const query = ref('')
-const results = ref<SearchResult[]>([])
-const activeIndex = ref(0)
-
-/** `error` = 索引拿不到（离线 / 404），此时给一句人话而不是空列表 */
-const status = ref<'loading' | 'ready' | 'error'>('loading')
-
-const listboxId = `search-listbox-${uid}`
-const optionId = (index: number): string => `search-option-${uid}-${index}`
-
-/** 只在真的有结果时挂 `aria-activedescendant`，否则会指向不存在的 id */
-const activeOptionId = computed(() =>
-  results.value.length > 0 ? optionId(activeIndex.value) : undefined,
-)
-
-const showEmptyHint = computed(() => status.value === 'ready' && query.value.trim().length === 0)
-const showNoResult = computed(
-  () => status.value === 'ready' && query.value.trim().length > 0 && results.value.length === 0,
-)
-
-/** 给屏幕阅读器播报的状态（结果数变化 / 加载中 / 失败都要说一声） */
-const liveMessage = computed(() => {
-  if (status.value === 'loading') return '正在加载搜索索引'
-  if (status.value === 'error') return '搜索索引加载失败'
-  if (query.value.trim().length === 0) return ''
-  return results.value.length > 0 ? `找到 ${results.value.length} 篇文章` : '没有找到匹配的文章'
-})
-
-/** reduce motion 时连过渡都不挂（`:css="false"` 让 Vue 跳过过渡检测） */
-const motionEnabled = computed(() => reducedMotion.value !== 'reduce')
-
-function close(): void {
-  emit('close')
-}
-
-// 焦点陷阱 + Esc 关闭 + 关闭后把焦点还给顶栏那颗搜索按钮
-useFocusTrap({ container: panel, open, onClose: close })
-useScrollLock(open)
-
-function applyQuery(value: string): void {
-  results.value = searchPosts(value)
-  activeIndex.value = 0
-}
-
-let timer: number | undefined
-
-function clearTimer(): void {
-  if (timer === undefined) return
-  window.clearTimeout(timer)
-  timer = undefined
-}
-
-async function start(): Promise<void> {
-  if (isSearchReady()) {
-    status.value = 'ready'
-    applyQuery(query.value)
-    return
-  }
-
-  status.value = 'loading'
-  try {
-    await prepareSearch()
-    status.value = 'ready'
-    // 索引在路上时用户可能已经敲了字：就绪后补搜一次，不用再敲
-    applyQuery(query.value)
-  } catch {
-    status.value = 'error'
-  }
-}
-
-watch(open, (isOpen) => {
-  if (!isOpen) return
-  clearTimer()
-  query.value = ''
-  results.value = []
-  activeIndex.value = 0
-  void start()
-})
-
-// 输入即搜（防抖）；索引没就绪时不搜，等 start() 里那次补搜
-watch(query, (value) => {
-  if (status.value !== 'ready') return
-  clearTimer()
-  timer = window.setTimeout(() => {
-    timer = undefined
-    applyQuery(value)
-  }, DEBOUNCE_MS)
-})
-
-onBeforeUnmount(clearTimer)
-
-function move(step: number): void {
-  const count = results.value.length
-  if (count === 0) return
-
-  activeIndex.value = (activeIndex.value + step + count) % count
-
-  /*
-   * 把高亮项滚进可视区。
-   * `behavior: 'instant'` 是必须的：全站开了 `scroll-behavior: smooth`
-   * （src/styles/scss/butterfly.scss），不显式写死的话，连按方向键会变成
-   * 一串互相打断的平滑滚动动画，看起来像卡住了。
+  /**
+   * 输入防抖。3 篇文章的索引就算每击键都重算也感觉不到，但索引会随文章数增长：
+   * 两趟 Fuse 检索是 O(文章数)，没有这个闸门，打字越快越卡。
    */
-  void nextTick(() => {
-    document
-      .getElementById(optionId(activeIndex.value))
-      ?.scrollIntoView({ block: 'nearest', behavior: 'instant' })
-  })
-}
+  const DEBOUNCE_MS = 180;
 
-function go(result: SearchResult | undefined): void {
-  if (!result) return
-  close()
-  void router.push(`/posts/${result.slug}`)
-}
+  const router = useRouter();
+  const reducedMotion = usePreferredReducedMotion();
 
-function onKeydown(event: KeyboardEvent): void {
-  if (event.key === 'ArrowDown') {
-    event.preventDefault()
-    move(1)
-    return
+  /** 同一页可能有多个弹窗实例（理论上），用 useId 保证 listbox / option 的 id 不撞车 */
+  const uid = useId();
+
+  const open = toRef(props, 'open');
+  const panel = ref<HTMLElement | null>(null);
+  const query = ref('');
+  const results = ref<SearchResult[]>([]);
+  const activeIndex = ref(0);
+
+  /** `error` = 索引拿不到（离线 / 404），此时给一句人话而不是空列表 */
+  const status = ref<'loading' | 'ready' | 'error'>('loading');
+
+  const listboxId = `search-listbox-${uid}`;
+  const optionId = (index: number): string => `search-option-${uid}-${index}`;
+
+  /** 只在真的有结果时挂 `aria-activedescendant`，否则会指向不存在的 id */
+  const activeOptionId = computed(() =>
+    results.value.length > 0 ? optionId(activeIndex.value) : undefined
+  );
+
+  const showEmptyHint = computed(() => status.value === 'ready' && query.value.trim().length === 0);
+  const showNoResult = computed(
+    () => status.value === 'ready' && query.value.trim().length > 0 && results.value.length === 0
+  );
+
+  /** 给屏幕阅读器播报的状态（结果数变化 / 加载中 / 失败都要说一声） */
+  const liveMessage = computed(() => {
+    if (status.value === 'loading') return '正在加载搜索索引';
+    if (status.value === 'error') return '搜索索引加载失败';
+    if (query.value.trim().length === 0) return '';
+    return results.value.length > 0 ? `找到 ${results.value.length} 篇文章` : '没有找到匹配的文章';
+  });
+
+  /** reduce motion 时连过渡都不挂（`:css="false"` 让 Vue 跳过过渡检测） */
+  const motionEnabled = computed(() => reducedMotion.value !== 'reduce');
+
+  function close(): void {
+    emit('close');
   }
-  if (event.key === 'ArrowUp') {
-    event.preventDefault()
-    move(-1)
-    return
+
+  // 焦点陷阱 + Esc 关闭 + 关闭后把焦点还给顶栏那颗搜索按钮
+  useFocusTrap({ container: panel, open, onClose: close });
+  useScrollLock(open);
+
+  function applyQuery(value: string): void {
+    results.value = searchPosts(value);
+    activeIndex.value = 0;
   }
-  if (event.key === 'Enter') {
-    event.preventDefault()
-    go(results.value[activeIndex.value])
+
+  let timer: number | undefined;
+
+  function clearTimer(): void {
+    if (timer === undefined) return;
+    window.clearTimeout(timer);
+    timer = undefined;
   }
-  // Esc 不在这里处理：`useFocusTrap` 已经在 document 上监听并回调 onClose
-}
+
+  async function start(): Promise<void> {
+    if (isSearchReady()) {
+      status.value = 'ready';
+      applyQuery(query.value);
+      return;
+    }
+
+    status.value = 'loading';
+    try {
+      await prepareSearch();
+      status.value = 'ready';
+      // 索引在路上时用户可能已经敲了字：就绪后补搜一次，不用再敲
+      applyQuery(query.value);
+    } catch {
+      status.value = 'error';
+    }
+  }
+
+  watch(open, isOpen => {
+    if (!isOpen) return;
+    clearTimer();
+    query.value = '';
+    results.value = [];
+    activeIndex.value = 0;
+    void start();
+  });
+
+  // 输入即搜（防抖）；索引没就绪时不搜，等 start() 里那次补搜
+  watch(query, value => {
+    if (status.value !== 'ready') return;
+    clearTimer();
+    timer = window.setTimeout(() => {
+      timer = undefined;
+      applyQuery(value);
+    }, DEBOUNCE_MS);
+  });
+
+  onBeforeUnmount(clearTimer);
+
+  function move(step: number): void {
+    const count = results.value.length;
+    if (count === 0) return;
+
+    activeIndex.value = (activeIndex.value + step + count) % count;
+
+    /*
+     * 把高亮项滚进可视区。
+     * `behavior: 'instant'` 是必须的：全站开了 `scroll-behavior: smooth`
+     * （src/styles/scss/butterfly.scss），不显式写死的话，连按方向键会变成
+     * 一串互相打断的平滑滚动动画，看起来像卡住了。
+     */
+    void nextTick(() => {
+      document
+        .getElementById(optionId(activeIndex.value))
+        ?.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+    });
+  }
+
+  function go(result: SearchResult | undefined): void {
+    if (!result) return;
+    close();
+    void router.push(`/posts/${result.slug}`);
+  }
+
+  function onKeydown(event: KeyboardEvent): void {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      move(1);
+      return;
+    }
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      move(-1);
+      return;
+    }
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      go(results.value[activeIndex.value]);
+    }
+    // Esc 不在这里处理：`useFocusTrap` 已经在 document 上监听并回调 onClose
+  }
 </script>
 
 <template>

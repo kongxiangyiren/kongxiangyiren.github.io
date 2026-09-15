@@ -3,10 +3,10 @@
   刻意保持「无卡片」的朴素形态：文章卡片流视觉属于下一批，这一批只负责把内容层接通。
 -->
 <script setup lang="ts">
-import type { BlogPostPreview } from '@/types/blog'
-import { formatPostDate, toDateTimeAttr } from '@/utils/date'
+  import type { BlogPostPreview } from '@/types/blog';
+  import { formatPostDate, toDateTimeAttr } from '@/utils/date';
 
-const props = defineProps<{ posts: BlogPostPreview[] }>()
+  const props = defineProps<{ posts: BlogPostPreview[] }>();
 </script>
 
 <template>
