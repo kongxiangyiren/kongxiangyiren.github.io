@@ -10,36 +10,38 @@
  * 这样「算法对不对」和「监听挂没挂对」是两个可以分开验证的问题。
  */
 
-import { nextTick, onScopeDispose, ref, watch, type Ref } from 'vue'
-import { useEventListener, usePreferredReducedMotion } from '@vueuse/core'
+import { nextTick, onScopeDispose, ref, watch, type Ref } from 'vue';
+import { usePreferredReducedMotion } from '@vueuse/core';
 
-import type { TocItem } from '@/types/blog'
+import { useWindowEvent } from '@/composables/useWindowEvent';
+
+import type { TocItem } from '@/types/blog';
 
 /**
  * 判定「当前章节」的视口顶线（px）。
  * 与正文标题的 `scroll-margin-top: 5rem`（80px，见 markdown.scss）对齐，
  * 再留一点余量：标题滚到这条线以上就算「已经进入该章节」。
  */
-const ACTIVE_LINE = 96
+const ACTIVE_LINE = 96;
 
 /**
  * 判定「滚到底」的容差（px）。
  * `scrollTop` / `scrollHeight` 都是取整过的整数，1px 的误差不该让最后一节漏判。
  */
-const BOTTOM_EPSILON = 2
+const BOTTOM_EPSILON = 2;
 
 /** 一次滚动快照。全是数字，方便单测直接构造 */
 export interface TocScrollSnapshot {
   /** 各标题相对**视口顶部**的距离（`getBoundingClientRect().top`），顺序与 TOC 一致 */
-  tops: readonly number[]
+  tops: readonly number[];
   /** 视口高度（`documentElement.clientHeight`） */
-  viewportHeight: number
+  viewportHeight: number;
   /** 文档总高（`documentElement.scrollHeight`） */
-  documentHeight: number
+  documentHeight: number;
   /** 当前滚动位置（`documentElement.scrollTop`） */
-  scrollY: number
+  scrollY: number;
   /** 判定线，默认 {@link ACTIVE_LINE} */
-  activeLine?: number
+  activeLine?: number;
 }
 
 /**
@@ -64,111 +66,115 @@ export function resolveActiveIndex({
   viewportHeight,
   documentHeight,
   scrollY,
-  activeLine = ACTIVE_LINE,
+  activeLine = ACTIVE_LINE
 }: TocScrollSnapshot): number {
-  if (tops.length === 0) return -1
+  if (tops.length === 0) return -1;
 
-  const scrollable = documentHeight - viewportHeight
+  const scrollable = documentHeight - viewportHeight;
   if (scrollable > BOTTOM_EPSILON && scrollY >= scrollable - BOTTOM_EPSILON) {
-    return tops.length - 1
+    return tops.length - 1;
   }
 
-  let active = 0
+  let active = 0;
   for (let i = 0; i < tops.length; i += 1) {
-    if ((tops[i] ?? Number.POSITIVE_INFINITY) > activeLine) break
-    active = i
+    if ((tops[i] ?? Number.POSITIVE_INFINITY) > activeLine) break;
+    active = i;
   }
-  return active
+  return active;
 }
 
 export interface UseTocHighlightOptions {
   /** TOC 数据。正文是异步加载的，所以传 Ref，加载完成后会自动重新采集标题 */
-  items: Ref<TocItem[]>
+  items: Ref<TocItem[]>;
   /** 判定线覆盖，默认 {@link ACTIVE_LINE} */
-  activeLine?: number
+  activeLine?: number;
 }
 
 export interface UseTocHighlightReturn {
   /** 当前高亮项 id；空串表示还没有可高亮的项 */
-  activeId: Ref<string>
+  activeId: Ref<string>;
   /** 当前高亮下标（-1 表示无），测试与调试用 */
-  activeIndex: Ref<number>
+  activeIndex: Ref<number>;
   /** 平滑滚动到某个锚点并修正 URL hash */
-  scrollTo: (id: string) => void
+  scrollTo: (id: string) => void;
 }
 
 export function useTocHighlight({
   items,
-  activeLine = ACTIVE_LINE,
+  activeLine = ACTIVE_LINE
 }: UseTocHighlightOptions): UseTocHighlightReturn {
-  const activeId = ref('')
-  const activeIndex = ref(-1)
-  const reducedMotion = usePreferredReducedMotion()
+  const activeId = ref('');
+  const activeIndex = ref(-1);
+  const reducedMotion = usePreferredReducedMotion();
 
   /** 已采集的标题元素，顺序与 `items` 一一对应 */
-  let headings: HTMLElement[] = []
+  let headings: HTMLElement[] = [];
   /** 待执行的 rAF 句柄，0 表示没有排队中的帧 */
-  let frame = 0
+  let frame = 0;
+
+  /** 预渲染（Node）里没有 DOM：这几个函数都只能空转，不能抛错 */
+  const hasDom = typeof document !== 'undefined';
 
   function collect(): void {
+    if (!hasDom) return;
     headings = items.value
-      .map((item) => document.getElementById(item.id))
-      .filter((el): el is HTMLElement => el !== null)
+      .map(item => document.getElementById(item.id))
+      .filter((el): el is HTMLElement => el !== null);
   }
 
   function update(): void {
-    frame = 0
-    if (headings.length === 0) return
+    frame = 0;
+    if (!hasDom || headings.length === 0) return;
 
-    const doc = document.documentElement
+    const doc = document.documentElement;
     const index = resolveActiveIndex({
-      tops: headings.map((el) => el.getBoundingClientRect().top),
+      tops: headings.map(el => el.getBoundingClientRect().top),
       viewportHeight: doc.clientHeight,
       documentHeight: doc.scrollHeight,
       scrollY: doc.scrollTop,
-      activeLine,
-    })
-    if (index < 0) return
+      activeLine
+    });
+    if (index < 0) return;
 
-    activeIndex.value = index
-    activeId.value = items.value[index]?.id ?? ''
+    activeIndex.value = index;
+    activeId.value = items.value[index]?.id ?? '';
   }
 
   /** scroll 事件每帧可能来好几次，用 rAF 合并成每帧最多算一次 */
   function schedule(): void {
-    if (frame !== 0) return
-    frame = requestAnimationFrame(update)
+    if (frame !== 0 || !hasDom) return;
+    frame = requestAnimationFrame(update);
   }
 
   // 正文异步到达 → items 变化 → 等 DOM 更新完再采集标题
   watch(
     items,
     async () => {
-      await nextTick()
-      collect()
-      update()
+      await nextTick();
+      collect();
+      update();
     },
-    { immediate: true },
-  )
+    { immediate: true }
+  );
 
-  useEventListener(window, 'scroll', schedule, { passive: true })
-  useEventListener(window, 'resize', schedule, { passive: true })
+  useWindowEvent('scroll', schedule, { passive: true });
+  useWindowEvent('resize', schedule, { passive: true });
 
   onScopeDispose(() => {
-    if (frame !== 0) cancelAnimationFrame(frame)
-    frame = 0
-  })
+    if (frame !== 0) cancelAnimationFrame(frame);
+    frame = 0;
+  });
 
   function scrollTo(id: string): void {
-    const target = document.getElementById(id)
-    if (!target) return
+    const target = document.getElementById(id);
+    if (!target) return;
 
     // 尊重 reduce motion：不做平滑滚动。
     // 竖直偏移交给正文标题自己的 `scroll-margin-top`，不用手算固定顶栏的高度。
     target.scrollIntoView({
       behavior: reducedMotion.value === 'reduce' ? 'auto' : 'smooth',
-      block: 'start',
-    })
+      block: 'start'
+    });
 
     /*
      * 只改 URL 的 hash，**不新增历史记录**。
@@ -176,14 +182,14 @@ export function useTocHighlight({
      * 也会让 vue-router 的导航流程再跑一遍（本项目没配 scrollBehavior，等于白跑）。
      * `replaceState` 传相对 URL，路径与 query 原样保留。
      */
-    history.replaceState(null, '', `#${encodeURIComponent(id)}`)
+    history.replaceState(null, '', `#${encodeURIComponent(id)}`);
 
     /*
      * 平滑滚动要几百毫秒，期间 scroll 事件会一节一节地把高亮推过去。
      * 先立刻切到目标项，点击反馈才不滞后于手指。
      */
-    activeId.value = id
+    activeId.value = id;
   }
 
-  return { activeId, activeIndex, scrollTo }
+  return { activeId, activeIndex, scrollTo };
 }

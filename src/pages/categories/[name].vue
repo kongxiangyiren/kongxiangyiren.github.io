@@ -4,19 +4,22 @@
   匹配逻辑共用 `src/utils/taxonomy.ts`。
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { categories } from 'virtual:blog/taxonomy'
+  import { computed } from 'vue';
+  import { useRoute } from 'vue-router';
+  import { categories } from 'virtual:blog/taxonomy';
 
-import PostLinkList from '@/components/blog/PostLinkList.vue'
-import AppIcon from '@/components/common/AppIcon.vue'
-import { routeParam } from '@/utils/route'
-import { findTaxonomyItem } from '@/utils/taxonomy'
+  import PostLinkList from '@/components/blog/PostLinkList.vue';
+  import AppIcon from '@/components/common/AppIcon.vue';
+  import { routeParam } from '@/utils/route';
+  import { findTaxonomyItem } from '@/utils/taxonomy';
 
-const route = useRoute()
-const name = computed(() => routeParam(route.params.name))
+  // 传路由键只是给 vue-router 的泛型做**类型收窄**（运行时实现是 `inject(routeLocationKey)`，
+  // 参数完全不被使用）。启用 typed routes 后 `route.params` 是所有路由参数的联合，
+  // 不传键就取不到 `name`。
+  const route = useRoute('/categories/[name]');
+  const name = computed(() => routeParam(route.params.name));
 
-const category = computed(() => findTaxonomyItem(categories, name.value))
+  const category = computed(() => findTaxonomyItem(categories, name.value));
 </script>
 
 <template>

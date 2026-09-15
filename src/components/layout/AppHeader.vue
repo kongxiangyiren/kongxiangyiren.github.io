@@ -14,139 +14,140 @@
     - 右侧滑入的 transition，且尊重 reduce motion（`:css` 开关）
 -->
 <script setup lang="ts">
-import { computed, nextTick, ref, shallowRef, watch } from 'vue'
-import { useEventListener, useMediaQuery, usePreferredReducedMotion } from '@vueuse/core'
-import { useRoute } from 'vue-router'
+  import { computed, nextTick, ref, shallowRef, watch } from 'vue';
+  import { useMediaQuery, usePreferredReducedMotion } from '@vueuse/core';
+  import { useRoute } from 'vue-router';
 
-import AppIcon from '@/components/common/AppIcon.vue'
-import { siteConfig } from '@/config/site'
-import { useFocusTrap } from '@/composables/useFocusTrap'
-import { useScrollLock } from '@/composables/useScrollLock'
-import { useTheme } from '@/composables/useTheme'
+  import AppIcon from '@/components/common/AppIcon.vue';
+  import { siteConfig } from '@/config/site';
+  import { useFocusTrap } from '@/composables/useFocusTrap';
+  import { useScrollLock } from '@/composables/useScrollLock';
+  import { useTheme } from '@/composables/useTheme';
+  import { useWindowEvent } from '@/composables/useWindowEvent';
 
-/** 越过这个距离才允许收起，避免刚滚动一点点就闪 */
-const HIDE_AFTER = 80
-/** 位移小于这个值视为抖动，不改变显隐 */
-const JITTER = 6
+  /** 越过这个距离才允许收起，避免刚滚动一点点就闪 */
+  const HIDE_AFTER = 80;
+  /** 位移小于这个值视为抖动，不改变显隐 */
+  const JITTER = 6;
 
-const route = useRoute()
-const { theme, toggleTheme } = useTheme()
+  const route = useRoute();
+  const { theme, toggleTheme } = useTheme();
 
-const hidden = ref(false)
-const drawerOpen = ref(false)
-let lastScrollY = 0
+  const hidden = ref(false);
+  const drawerOpen = ref(false);
+  let lastScrollY = 0;
 
-const themeActionLabel = computed(() =>
-  theme.value === 'dark' ? '切换到亮色模式' : '切换到暗色模式',
-)
+  const themeActionLabel = computed(() =>
+    theme.value === 'dark' ? '切换到亮色模式' : '切换到暗色模式'
+  );
 
-function isActive(to: string): boolean {
-  if (to === '/') return route.path === '/'
-  return route.path === to || route.path.startsWith(`${to}/`)
-}
-
-useEventListener(
-  window,
-  'scroll',
-  () => {
-    const y = window.scrollY
-    const delta = y - lastScrollY
-    if (Math.abs(delta) < JITTER) return
-    hidden.value = delta > 0 && y > HIDE_AFTER
-    lastScrollY = y
-  },
-  { passive: true },
-)
-
-// 路由切换时收起抽屉与搜索弹窗，否则点完链接浮层还挂着
-watch(
-  () => route.fullPath,
-  () => {
-    closeDrawer()
-    closeSearch()
-  },
-)
-
-// ---------------------------------------------------------------------------
-// 移动端抽屉（自研）
-// ---------------------------------------------------------------------------
-
-const panel = ref<HTMLElement | null>(null)
-const reducedMotion = usePreferredReducedMotion()
-
-/** reduce 时连过渡都不要挂：`:css="false"` 让 Vue 直接跳过过渡检测 */
-const motionEnabled = computed(() => reducedMotion.value !== 'reduce')
-
-function closeDrawer(): void {
-  drawerOpen.value = false
-}
-
-// 焦点陷阱 + Esc 关闭 + 关闭后把焦点还给汉堡按钮
-useFocusTrap({ container: panel, open: drawerOpen, onClose: closeDrawer })
-
-/*
- * 滚动锁：抽屉与详情页的 lightbox 共用 `useScrollLock`（引用计数 + 原值还原）。
- * 实现细节与「为什么不需要补偿滚动条宽度」见 src/composables/useScrollLock.ts。
- */
-useScrollLock(drawerOpen)
-
-// 拖到桌面宽度时抽屉被 `md:hidden` 藏起来，状态必须一起收掉，否则滚动锁会永久卡住
-const isDesktop = useMediaQuery('(min-width: 768px)')
-watch(isDesktop, (desktop) => {
-  if (desktop) closeDrawer()
-})
-
-// ---------------------------------------------------------------------------
-// 站内搜索（顶栏按钮 / Ctrl+K / Cmd+K）
-// ---------------------------------------------------------------------------
-
-/**
- * 弹窗组件本体**动态 import**：搜索 UI 与 fuse.js 都不进 entry chunk。
- *
- * 挂载与开屏刻意分成两步（和详情页 lightbox 同一手法）：先以 `open=false` 挂上，
- * 再翻转 `open`。`useFocusTrap` 是靠 `watch(open)` 的**翻转**来安装焦点陷阱、
- * 并记录「关闭后焦点归还给谁」的；如果挂载和 `open=true` 落在同一个 tick，
- * 那次翻转根本不存在，陷阱与焦点归还就都不会发生。
- */
-type SearchDialogComponent = (typeof import('@/components/search/SearchDialog.vue'))['default']
-
-const searchComponent = shallowRef<SearchDialogComponent | null>(null)
-const searchOpen = ref(false)
-/** 搜索按钮本身：用于 Ctrl+K 打开前“抢占焦点”（见下） */
-const searchButton = ref<HTMLButtonElement | null>(null)
-
-async function openSearch(): Promise<void> {
-  // 抽屉开着时不叠弹窗：两个焦点陷阱叠在一起，键盘行为会变得难以理解
-  if (drawerOpen.value) return
-
-  /*
-   * 先用按钮抢下焦点。
-   * `useFocusTrap` 的“焦点归还”归还的是**打开前那个元素**；从键盘快捷键（Ctrl+K）
-   * 打开时，用户可能根本没点过任何东西，那时 `document.activeElement` 就是 `<body>`
-   * —— 归还给 body 等于没归还，关闭后键盘用户会失去焦点位置（实测到了这个现象）。
-   * 焦在别处（比如用户 Tab 到某个链接后按 Ctrl+K）时不抢，照常归还给原来那个元素。
-   */
-  if (document.activeElement === document.body) searchButton.value?.focus()
-
-  if (!searchComponent.value) {
-    searchComponent.value = (await import('@/components/search/SearchDialog.vue')).default
-    await nextTick()
+  function isActive(to: string): boolean {
+    if (to === '/') return route.path === '/';
+    return route.path === to || route.path.startsWith(`${to}/`);
   }
 
-  searchOpen.value = true
-}
+  useWindowEvent(
+    'scroll',
+    () => {
+      const y = window.scrollY;
+      const delta = y - lastScrollY;
+      if (Math.abs(delta) < JITTER) return;
+      hidden.value = delta > 0 && y > HIDE_AFTER;
+      lastScrollY = y;
+    },
+    { passive: true }
+  );
 
-function closeSearch(): void {
-  searchOpen.value = false
-}
+  // 路由切换时收起抽屉与搜索弹窗，否则点完链接浮层还挂着
+  watch(
+    () => route.fullPath,
+    () => {
+      closeDrawer();
+      closeSearch();
+    }
+  );
 
-useEventListener(window, 'keydown', (event: KeyboardEvent) => {
-  if (event.key.toLowerCase() !== 'k' || !(event.ctrlKey || event.metaKey) || event.altKey) return
-  // Firefox 里 Ctrl+K 是「聚焦地址栏并搜索」，必须拦掉，否则快捷键会被浏览器抢走
-  event.preventDefault()
-  if (searchOpen.value) closeSearch()
-  else void openSearch()
-})
+  // ---------------------------------------------------------------------------
+  // 移动端抽屉（自研）
+  // ---------------------------------------------------------------------------
+
+  const panel = ref<HTMLElement | null>(null);
+  const reducedMotion = usePreferredReducedMotion();
+
+  /** reduce 时连过渡都不要挂：`:css="false"` 让 Vue 直接跳过过渡检测 */
+  const motionEnabled = computed(() => reducedMotion.value !== 'reduce');
+
+  function closeDrawer(): void {
+    drawerOpen.value = false;
+  }
+
+  // 焦点陷阱 + Esc 关闭 + 关闭后把焦点还给汉堡按钮
+  useFocusTrap({ container: panel, open: drawerOpen, onClose: closeDrawer });
+
+  /*
+   * 滚动锁：抽屉与详情页的 lightbox 共用 `useScrollLock`（引用计数 + 原值还原）。
+   * 实现细节与「为什么不需要补偿滚动条宽度」见 src/composables/useScrollLock.ts。
+   */
+  useScrollLock(drawerOpen);
+
+  // 拖到桌面宽度时抽屉被 `md:hidden` 藏起来，状态必须一起收掉，否则滚动锁会永久卡住
+  const isDesktop = useMediaQuery('(min-width: 768px)');
+  watch(isDesktop, desktop => {
+    if (desktop) closeDrawer();
+  });
+
+  // ---------------------------------------------------------------------------
+  // 站内搜索（顶栏按钮 / Ctrl+K / Cmd+K）
+  // ---------------------------------------------------------------------------
+
+  /**
+   * 弹窗组件本体**动态 import**：搜索 UI 与 fuse.js 都不进 entry chunk。
+   *
+   * 挂载与开屏刻意分成两步（和详情页 lightbox 同一手法）：先以 `open=false` 挂上，
+   * 再翻转 `open`。`useFocusTrap` 是靠 `watch(open)` 的**翻转**来安装焦点陷阱、
+   * 并记录「关闭后焦点归还给谁」的；如果挂载和 `open=true` 落在同一个 tick，
+   * 那次翻转根本不存在，陷阱与焦点归还就都不会发生。
+   */
+  type SearchDialogComponent = (typeof import('@/components/search/SearchDialog.vue'))['default'];
+
+  const searchComponent = shallowRef<SearchDialogComponent | null>(null);
+  const searchOpen = ref(false);
+  /** 搜索按钮本身：用于 Ctrl+K 打开前“抢占焦点”（见下） */
+  const searchButton = ref<HTMLButtonElement | null>(null);
+
+  async function openSearch(): Promise<void> {
+    // 抽屉开着时不叠弹窗：两个焦点陷阱叠在一起，键盘行为会变得难以理解
+    if (drawerOpen.value) return;
+
+    /*
+     * 先用按钮抢下焦点。
+     * `useFocusTrap` 的“焦点归还”归还的是**打开前那个元素**；从键盘快捷键（Ctrl+K）
+     * 打开时，用户可能根本没点过任何东西，那时 `document.activeElement` 就是 `<body>`
+     * —— 归还给 body 等于没归还，关闭后键盘用户会失去焦点位置（实测到了这个现象）。
+     * 焦在别处（比如用户 Tab 到某个链接后按 Ctrl+K）时不抢，照常归还给原来那个元素。
+     */
+    if (document.activeElement === document.body) searchButton.value?.focus();
+
+    if (!searchComponent.value) {
+      searchComponent.value = (await import('@/components/search/SearchDialog.vue')).default;
+      await nextTick();
+    }
+
+    searchOpen.value = true;
+  }
+
+  function closeSearch(): void {
+    searchOpen.value = false;
+  }
+
+  useWindowEvent('keydown', (event: KeyboardEvent) => {
+    if (event.key.toLowerCase() !== 'k' || !(event.ctrlKey || event.metaKey) || event.altKey)
+      return;
+    // Firefox 里 Ctrl+K 是「聚焦地址栏并搜索」，必须拦掉，否则快捷键会被浏览器抢走
+    event.preventDefault();
+    if (searchOpen.value) closeSearch();
+    else void openSearch();
+  });
 </script>
 
 <template>
@@ -279,7 +280,7 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
 </template>
 
 <style lang="scss" scoped>
-/*
+  /*
  * 遮罩淡入 + 面板从右滑入。
  * Vue 的 Transition 只把类名挂在**根节点**（遮罩容器）上，而横向滑动必须只作用在面板上，
  * 否则遮罩会跟着一起横向滑、看起来像整页在动。所以这里自己写规则，
@@ -287,21 +288,21 @@ useEventListener(window, 'keydown', (event: KeyboardEvent) => {
  *
  * 这里只是过渡规则，没有重写间距 / 颜色，不违反「Sass 不重写 Tailwind 已覆盖的样式」。
  */
-.drawer-enter-active,
-.drawer-leave-active {
-  transition: opacity 0.3s ease;
+  .drawer-enter-active,
+  .drawer-leave-active {
+    transition: opacity 0.3s ease;
 
-  .drawer-panel {
-    transition: transform 0.3s ease;
+    .drawer-panel {
+      transition: transform 0.3s ease;
+    }
   }
-}
 
-.drawer-enter-from,
-.drawer-leave-to {
-  opacity: 0;
+  .drawer-enter-from,
+  .drawer-leave-to {
+    opacity: 0;
 
-  .drawer-panel {
-    transform: translateX(100%);
+    .drawer-panel {
+      transform: translateX(100%);
+    }
   }
-}
 </style>

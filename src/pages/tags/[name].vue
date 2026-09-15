@@ -6,19 +6,22 @@
   匹配逻辑（含中文百分号编码的兜底）在 `src/utils/taxonomy.ts`，与分类页共用一份。
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { tags } from 'virtual:blog/taxonomy'
+  import { computed } from 'vue';
+  import { useRoute } from 'vue-router';
+  import { tags } from 'virtual:blog/taxonomy';
 
-import PostLinkList from '@/components/blog/PostLinkList.vue'
-import AppIcon from '@/components/common/AppIcon.vue'
-import { routeParam } from '@/utils/route'
-import { findTaxonomyItem } from '@/utils/taxonomy'
+  import PostLinkList from '@/components/blog/PostLinkList.vue';
+  import AppIcon from '@/components/common/AppIcon.vue';
+  import { routeParam } from '@/utils/route';
+  import { findTaxonomyItem } from '@/utils/taxonomy';
 
-const route = useRoute()
-const name = computed(() => routeParam(route.params.name))
+  // 传路由键只是给 vue-router 的泛型做**类型收窄**（运行时实现是 `inject(routeLocationKey)`，
+  // 参数完全不被使用）。启用 typed routes 后 `route.params` 是所有路由参数的联合，
+  // 不传键就取不到 `name`。
+  const route = useRoute('/tags/[name]');
+  const name = computed(() => routeParam(route.params.name));
 
-const tag = computed(() => findTaxonomyItem(tags, name.value))
+  const tag = computed(() => findTaxonomyItem(tags, name.value));
 </script>
 
 <template>

@@ -11,45 +11,45 @@
    - 波浪用 --global-bg 填充，所以亮 / 暗两种主题都能和下方内容区无缝接上。
 -->
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useEventListener, usePreferredReducedMotion } from '@vueuse/core'
+  import { computed, ref } from 'vue';
+  import { usePreferredReducedMotion } from '@vueuse/core';
 
-import AppIcon from '@/components/common/AppIcon.vue'
-import TypewriterText from '@/components/home/TypewriterText.vue'
-import { siteConfig } from '@/config/site'
+  import AppIcon from '@/components/common/AppIcon.vue';
+  import TypewriterText from '@/components/home/TypewriterText.vue';
+  import { siteConfig } from '@/config/site';
+  import { useWindowEvent } from '@/composables/useWindowEvent';
 
-const BANNER_IMAGE = `${import.meta.env.BASE_URL}images/banner.svg`
-/** 视差只在前 320px 滚动里生效，再往下 Banner 已经出屏了 */
-const PARALLAX_RANGE = 320
-const PARALLAX_SHIFT = 0.18
-/** 与 index.vue 里内容区块的 id 对应 */
-const CONTENT_ID = 'home-content'
+  const BANNER_IMAGE = `${import.meta.env.BASE_URL}images/banner.svg`;
+  /** 视差只在前 320px 滚动里生效，再往下 Banner 已经出屏了 */
+  const PARALLAX_RANGE = 320;
+  const PARALLAX_SHIFT = 0.18;
+  /** 与 index.vue 里内容区块的 id 对应 */
+  const CONTENT_ID = 'home-content';
 
-const reducedMotion = usePreferredReducedMotion()
-const scrolled = ref(0)
+  const reducedMotion = usePreferredReducedMotion();
+  const scrolled = ref(0);
 
-useEventListener(
-  window,
-  'scroll',
-  () => {
-    if (reducedMotion.value === 'reduce') return
-    scrolled.value = Math.min(window.scrollY, PARALLAX_RANGE)
-  },
-  { passive: true },
-)
+  useWindowEvent(
+    'scroll',
+    () => {
+      if (reducedMotion.value === 'reduce') return;
+      scrolled.value = Math.min(window.scrollY, PARALLAX_RANGE);
+    },
+    { passive: true }
+  );
 
-const backgroundStyle = computed(() =>
-  reducedMotion.value === 'reduce'
-    ? undefined
-    : { transform: `translate3d(0, ${scrolled.value * PARALLAX_SHIFT}px, 0)` },
-)
+  const backgroundStyle = computed(() =>
+    reducedMotion.value === 'reduce'
+      ? undefined
+      : { transform: `translate3d(0, ${scrolled.value * PARALLAX_SHIFT}px, 0)` }
+  );
 
-function scrollToContent(): void {
-  document.getElementById(CONTENT_ID)?.scrollIntoView({
-    behavior: reducedMotion.value === 'reduce' ? 'auto' : 'smooth',
-    block: 'start',
-  })
-}
+  function scrollToContent(): void {
+    document.getElementById(CONTENT_ID)?.scrollIntoView({
+      behavior: reducedMotion.value === 'reduce' ? 'auto' : 'smooth',
+      block: 'start'
+    });
+  }
 </script>
 
 <template>

@@ -4,32 +4,33 @@
   用 scaleX 而不是 width：走合成层，不触发 layout。
 -->
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch } from 'vue'
-import { useEventListener } from '@vueuse/core'
-import { useRoute } from 'vue-router'
+  import { nextTick, onMounted, ref, watch } from 'vue';
+  import { useRoute } from 'vue-router';
 
-const route = useRoute()
-const progress = ref(0)
+  import { useWindowEvent } from '@/composables/useWindowEvent';
 
-function update(): void {
-  const doc = document.documentElement
-  const scrollable = doc.scrollHeight - doc.clientHeight
-  progress.value = scrollable > 0 ? Math.min(1, Math.max(0, doc.scrollTop / scrollable)) : 0
-}
+  const route = useRoute();
+  const progress = ref(0);
 
-useEventListener(window, 'scroll', update, { passive: true })
-useEventListener(window, 'resize', update, { passive: true })
+  function update(): void {
+    const doc = document.documentElement;
+    const scrollable = doc.scrollHeight - doc.clientHeight;
+    progress.value = scrollable > 0 ? Math.min(1, Math.max(0, doc.scrollTop / scrollable)) : 0;
+  }
 
-onMounted(update)
+  useWindowEvent('scroll', update, { passive: true });
+  useWindowEvent('resize', update, { passive: true });
 
-// 路由切换后文档高度变了，进度要重新算一次
-watch(
-  () => route.fullPath,
-  async () => {
-    await nextTick()
-    update()
-  },
-)
+  onMounted(update);
+
+  // 路由切换后文档高度变了，进度要重新算一次
+  watch(
+    () => route.fullPath,
+    async () => {
+      await nextTick();
+      update();
+    }
+  );
 </script>
 
 <template>

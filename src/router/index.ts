@@ -1,21 +1,22 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import { routes } from 'vue-router/auto-routes'
+import { createRouter, createWebHistory } from 'vue-router';
+import { routes } from 'vue-router/auto-routes';
 
-import { siteConfig } from '@/config/site'
-
-const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes,
-})
+import type { RouterHistory } from 'vue-router';
 
 /**
- * 文档标题也从 site config 派生，避免页面里出现硬编码的站点名。
- * 详情页等需要自定义标题时，用 `definePage({ meta: { title: '…' } })` 覆盖即可。
- * （纯 SPA 下 index.html 里的静态标题由构建插件从同一份配置注入。）
+ * 路由工厂 —— 客户端与预渲染共用。
+ *
+ * 为什么不做单例默认导出：预渲染要的是 `createMemoryHistory()`，而 `createWebHistory()`
+ * 内部会读 `document`/`window`（Node 里直接抛错）。做成工厂后「用哪种 history」由调用方决定：
+ *   - `src/main.ts`（客户端入口）→ 缺省参数 = createWebHistory
+ *   - `src/entry-server.ts`（预渲染）→ createMemoryHistory
+ *
+ * ⚠️ 标题不再由这里写 `document.title`：那样服务端渲染时标题进不了 HTML（`document` 不存在）。
+ * 现在统一交给 unhead —— 见 `src/composables/useSeo.ts`，它按 `to.meta.title` 与文章元数据
+ * 算出标题，客户端/服务端同一份逻辑，预渲染产物里就能带每页各自的 <title>。
  */
-router.afterEach((to) => {
-  const title = typeof to.meta.title === 'string' ? to.meta.title : ''
-  document.title = title ? `${title} - ${siteConfig.title}` : siteConfig.title
-})
-
-export default router
+export function createBlogRouter(
+  history: RouterHistory = createWebHistory(import.meta.env.BASE_URL)
+) {
+  return createRouter({ history, routes });
+}
