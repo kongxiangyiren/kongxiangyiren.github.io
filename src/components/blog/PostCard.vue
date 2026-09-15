@@ -71,7 +71,7 @@
       <!-- 无封面：优雅降级 —— 用一条主题色渐变代替图片区，不留破图 -->
       <div
         v-else
-        class="h-1.5 w-full bg-gradient-to-r from-primary via-primary/40 to-primary/10"
+        class="h-1.5 w-full bg-linear-to-r from-primary via-primary/40 to-primary/10"
         aria-hidden="true"
       ></div>
 

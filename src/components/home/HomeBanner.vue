@@ -61,11 +61,11 @@
       :src="BANNER_IMAGE"
       alt=""
       aria-hidden="true"
-      class="absolute inset-x-0 -top-[20%] h-[140%] w-full object-cover"
+      class="absolute inset-x-0 top-[-20%] h-[140%] w-full object-cover"
       :style="backgroundStyle"
     />
     <div
-      class="absolute inset-0 bg-gradient-to-b from-black/70 via-black/45 to-black/70"
+      class="absolute inset-0 bg-linear-to-b from-black/70 via-black/45 to-black/70"
       aria-hidden="true"
     ></div>
 
@@ -90,7 +90,7 @@
 
     <!-- 底部波浪：fill 用内容区背景令牌，切换到内容区时无缝 -->
     <svg
-      class="absolute -bottom-px left-0 h-[60px] w-full"
+      class="absolute -bottom-px left-0 h-15 w-full"
       viewBox="0 0 1440 100"
       preserveAspectRatio="none"
       aria-hidden="true"

@@ -34,7 +34,7 @@
 </script>
 
 <template>
-  <div class="pointer-events-none fixed inset-x-0 top-0 z-50 h-[3px]" aria-hidden="true">
+  <div class="pointer-events-none fixed inset-x-0 top-0 z-50 h-0.75" aria-hidden="true">
     <div
       class="h-full origin-left bg-primary transition-transform duration-150 ease-out"
       :style="{ transform: `scaleX(${progress})` }"

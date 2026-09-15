@@ -111,7 +111,7 @@
           class="relative"
         >
           <span
-            class="absolute top-1.5 -left-[27px] h-3 w-3 rounded-full border-2 border-primary bg-global"
+            class="absolute top-1.5 -left-6.75 h-3 w-3 rounded-full border-2 border-primary bg-global"
             aria-hidden="true"
           ></span>
           <p class="font-mono text-xs text-font opacity-70">{{ entry.date }}</p>
