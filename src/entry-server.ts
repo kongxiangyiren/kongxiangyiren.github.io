@@ -52,7 +52,15 @@ const NOT_FOUND_ROUTE_NAME = '/[...all]';
 export default {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
-    const headInstance = createHead();
+    /*
+     * ⚠️ `disableDefaults`: unhead 的 createHead 默认会塞三样东西 ——
+     * `<html lang="en">`、`<meta charset="utf-8">`、`<meta name="viewport" ...>`（见 unhead 源码的
+     * `DEFAULT_INIT`）。而外壳 `index.html` 自己已经声明了 `lang="zh-CN"` / charset / viewport，
+     * 于是产物里 charset 与 viewport **各出现两次**（且 `initial-scale` 一个 `1.0` 一个 `1`，
+     * 值还不一致）。文档级的这三样属于**外壳的职责**（它在 Vite 的 HTML 管线里，也是 dev 下
+     * 直接打开 index.html 时的唯一来源），不该由 head 管理器再插一份，所以这里关掉 unhead 的默认值。
+     */
+    const headInstance = createHead({ disableDefaults: true });
     const { app, router } = createBlogApp({ history: createMemoryHistory(), head: headInstance });
 
     await router.push(url.pathname + url.search);

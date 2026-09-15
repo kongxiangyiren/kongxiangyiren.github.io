@@ -46,6 +46,14 @@ export interface FriendLink {
 }
 
 export interface SiteConfig {
+  /**
+   * 站点根地址，**不带尾斜杠**（如 `https://blog.example.com`）。
+   *
+   * ⚠️ **上线前必须改成真实域名**：canonical / og:url / og:image / JSON-LD 全靠它拼绝对地址。
+   * 留在示例域名上会让搜索引擎把「真正的规范地址」指到别人的域，是自伤式的 SEO 错误。
+   * 留空字符串则退化为根相对路径（降级规则见 `src/utils/url.ts#absoluteUrl`）。
+   */
+  url: string;
   title: string;
   /** 首屏打字机用的副标题（可含多个句号分隔的短句，会循环播放） */
   subtitle: string;
@@ -69,6 +77,23 @@ export interface SiteConfig {
   license: string;
   /** 协议详情链接 */
   licenseUrl: string;
+  /**
+   * 默认社交分享图（`og:image` 兜底）。
+   *
+   * ⚠️ **必须是 1200×630 的 PNG / JPG**：Twitter / Facebook / 微信的抓取器普遍**不认 SVG**，
+   * 拿不到像素就整张卡片没图，所以这里不能填 `public/images/` 下的 svg。
+   * 换成别的尺寸时，`src/composables/useSeo.ts` 里输出的 `og:image:width/height` 也要跟着改
+   * （元数据与实际图片不符会被抓取器判定为无效图）。
+   *
+   * 留空字符串 ⇒ **完全不输出** `og:image` 系列标签（而不是输出一个坏地址）；
+   * 此时 `twitter:card` 会自动降级为 `summary`。
+   *
+   * 当前值指向的 `public/images/og-default.png` 是**生成出来的**（配色沿用 banner.svg 的
+   * 深蓝渐变 + 主题色光晕，图里没有文字），生成脚本见 `scripts/generate-og-image.mjs`。
+   * 想换成带站点名的正式设计稿：用设计工具做一张 1200×630 的 PNG/JPG 覆盖同名文件即可，
+   * 这里的路径与 useSeo.ts 里的尺寸声明都不用改。
+   */
+  ogImage: string;
   /**
    * 关于页的「技能 / 兴趣」标签。
    *
@@ -100,6 +125,8 @@ export interface SiteConfig {
 }
 
 export const siteConfig: SiteConfig = {
+  // ⚠️ 示例域名，上线前必须改成真实域名（见接口上的说明）
+  url: 'https://blog.example.com',
   title: '空巷一人',
   subtitle: '记录技术与生活的零散想法。写代码，也写字。',
   description: '前端开发笔记、工程杂谈与零散记录。',
@@ -128,6 +155,7 @@ export const siteConfig: SiteConfig = {
   icp: '',
   license: 'CC BY-NC-SA 4.0',
   licenseUrl: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+  ogImage: '/images/og-default.png',
 
   /*
    * ⚠️ 下面是给站长填的占位。默认全部留空 —— 编造个人经历/友链比留白糟糕得多。
@@ -147,6 +175,11 @@ export const siteConfig: SiteConfig = {
    *     url: 'https://example.com',
    *   },
    * ],
+   *
+   * 另外两项不是「区块开关」，但同样需要站长确认：
+   *
+   * url: 'https://你的域名',            // 不带尾斜杠；canonical / og:url 的根基，**上线前必改**
+   * ogImage: '/images/og-default.png',  // 1200×630 的 PNG/JPG；留空则整套 og:image 标签不输出
    */
   skills: [],
   timeline: [],

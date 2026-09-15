@@ -7,6 +7,12 @@ dist
 dist-ssr
 node_modules
 
+# 文章正文是**数据**，不是代码：
+# prettier 会连带格式化 md 围栏里的嵌入代码，实测已把文章中的 TS 示例补上分号
+# （作者本意是无分号风格）—— 改的是**读者能看见的正文**。内容层必须整体隔离，
+# 靠逐个文件放行迟早会漏。正文里的表格对齐同理（它属于排版，不属于语义）。
+content/
+
 # 由工具在构建 / dev 期生成，不是手写源码：
 #  · src/types/components.d.ts —— unplugin-vue-components 每次构建重写
 #  · typed-router.d.ts        —— vue-router/vite 每次构建重写

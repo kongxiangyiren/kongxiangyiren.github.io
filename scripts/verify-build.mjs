@@ -22,6 +22,8 @@
  *   4. `<body>` 存在且非空壳（`#app` 内有实际内容）
  *   5. `<div id="app">` 存在，且其内容长度 > 0、去标签后有实际文本
  *   6. 文档骨架完整：`<!doctype html>` / `<html>` / `<head>` / `</body>` / `</html>`
+ *   7. `<meta charset>` 与 `<meta name="viewport">` 各**恰好 1 个**（外壳与 unhead 都声明过）
+ *   8. JSON-LD 块能 `JSON.parse`、且内容里没有裸 `<`（同样会让 raw-text 元素提前闭合）
  *
  * 任何一项失败 → **exit 1**，并逐条打印「文件 / 校验项 / 期望 / 实际」。
  */
@@ -226,6 +228,39 @@ function verifyHtml(html) {
   if (countClose(html, 'html') === 0) fail('</html>', '存在', '缺失');
   if (visibleTextLength(html) === 0) fail('文档可见文本', '全文非空', '去标签后文本长度为 0');
 
+  // 7. 文档级的 charset / viewport 各**恰好一份**
+  //
+  //    外壳 `index.html` 与 unhead 都声明过这两样（unhead 的 `createHead()` 默认塞
+  //    `DEFAULT_INIT`），产物里曾各出现两次、且 `initial-scale` 一个 `1.0` 一个 `1`。
+  //    `src/entry-server.ts` 已改 `disableDefaults: true` 让外壳独占，这里加一道防回归。
+  //    用 `<meta charset[\\s=]` 卡边界（属性写法的 `=` 也算），避免误命中别的标签
+  const charsetCount = countMatches(html, '<meta charset[\\s=]', 'gi');
+  if (charsetCount !== 1) fail('<meta charset> 数量', '恰好 1 个', `${charsetCount} 个`);
+
+  const viewportCount = countMatches(html, '<meta name="viewport"', 'gi');
+  if (viewportCount !== 1) fail('<meta name="viewport"> 数量', '恰好 1 个', `${viewportCount} 个`);
+
+  // 8. JSON-LD（`<script type="application/ld+json">`）必须真的是合法 JSON，且内容里不能有裸 `<`
+  //
+  //    两条都源自同一个理由：`<script>` 是 raw-text 元素，JSON 里出现 `</script` 会让解析器
+  //    **提前关闭脚本**（第 1 项的配对检查能抓到那种情况，但抓不到「JSON 被写坏」）。
+  //    这里刻意**真的 JSON.parse 一遍**，而不是用正则目测 —— P0 的教训就是「只看文本看不出来」。
+  const jsonLdBlocks =
+    html.match(/<script[^>]*application\/ld\+json[^>]*>[\s\S]*?<\/script>/g) ?? [];
+  for (const block of jsonLdBlocks) {
+    const body = block.replace(/^<script[^>]*>/, '').replace(/<\/script>$/, '');
+
+    if (body.includes('<')) {
+      fail('JSON-LD 裸 <', '内容里的 `<` 应转义成 \\u003c', '发现未转义的 `<`');
+    }
+
+    try {
+      JSON.parse(body);
+    } catch (error) {
+      fail('JSON-LD 可解析', 'JSON.parse 成功', `解析失败：${error.message}`);
+    }
+  }
+
   return issues;
 }
 
@@ -278,6 +313,7 @@ function main() {
   }
 
   console.log('✓ 门禁通过：全部产物标签配对、title 唯一且非空、#app 有内容。');
+  console.log('  （另含：charset/viewport 去重后各 1 个、JSON-LD 可 JSON.parse 且无裸 `<`）');
   console.log('  提醒：结构校验不能替代真实浏览器验证（DOM / 水合警告才是权威）。');
 }
 
